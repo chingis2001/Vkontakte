@@ -1,0 +1,137 @@
+﻿@using Microsoft.AspNetCore.Http;
+@model List<Vkontakte.Models.Блог>
+@{
+    ViewData["Title"] = "Blogs List";
+}
+<div class="row">
+    <div class="col-12" style="background-color: #ffffff; border-radius: 4px;">
+        <div class="row">
+            <div class="col-3 topnav">
+                <a class="active">Все сообщества</a>
+            </div>
+            <div style="padding-left:0; padding-right:0" class="col-2 topnav">
+                <a>Управление</a>
+            </div>
+            <div class="col-3"></div>
+            <div class="col-4">
+                <a style="font-size:12px; margin-top:0.4rem" class="btn btn-primary justify-content-center" asp-action="CreateSociety" asp-controller="Blogs">Создать сообщество</a>
+            </div>
+        </div>
+        <div class="row" style="margin-top:0.4rem">
+            <div class="col-9">
+                <input id="FindByName" class="form-control" type="text" style="border-right:none; border-left:none" /><input type="hidden" id="@ViewData["id"]" />
+            </div>
+        </div>
+        <div id="blogslist" class="row" style="margin-top:0.4rem; margin-left:1rem">
+            <div class="col-12">
+                @foreach (var item in Model)
+                {
+                    <div class="row" style="margin-bottom: 1rem; border-bottom: 1px solid #f1f1f4">
+                        <div class="col-12" style="margin-bottom:1rem">
+                            <p style="margin-bottom:0">
+                                <a asp-controller="Blogs" asp-action="BlogPosts" asp-route-id="@item.ID_Блога">@item.Название</a>
+                            </p>
+                            <p style="margin-bottom:0; font-size:12px">
+                                @item.Тематика.Наименование
+                            </p>
+                            <p style="margin-bottom:0.4rem; font-size:12px">
+                                @item.Подписчики.Count() подписчиков
+                            </p>
+                            <p style="margin-bottom:0" class="subscription">
+                                <a id="@item.ID_Блога" style="font-size:12px" href="" class="btn btn-primary">Отписаться</a>
+                            </p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+@section Additional
+{
+    <div class="row" style="margin-left:0.4rem">
+        <div class="col-12" style="background-color: #ffffff; border-radius: 4px;">
+            <div class="row" style="margin-top:0.4rem">
+                <div class="col-12">
+                    <p style="font-size:12px; margin-bottom:0.4rem">
+                        <a asp-controller="Blogs" asp-action="PublicsList">Мои сообщества</a>
+                    </p>
+                </div>
+            </div>
+            <div class="row" style="margin-top:0.4rem; margin-bottom: 0.4rem">
+                <div class="col-12">
+                    <p style="font-size:12px; margin-bottom:0.4rem">
+                        <a asp-controller="Blogs" asp-action="FindCommunity">Поиск сообществ</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<script>
+    let findButton = document.getElementById("FindByName");
+    findButton.addEventListener("input", function (event) {
+        var id = event.target.nextSibling.id;
+        var data = { pattern: event.target.value, id: id };
+        let request = new XMLHttpRequest();
+        function reqReadyStateChange() {
+            if (request.readyState == 4 && request.status == 200) {
+                response = JSON.parse(request.responseText);
+                let div = document.getElementById("blogslist").firstChild;
+                while (div.firstChild) {
+                    div.removeChild(div.firstChild);
+                }
+                for (let i = 0; i < response.length; i++) {
+                    let blogdiv = document.createElement('div');
+                    blogdiv.setAttribute('class', 'row');
+                    blogdiv.style = 'margin-bottom: 1rem; border-bottom: 1px solid #f1f1f4';
+                    let coldiv = document.createElement('div');
+                    coldiv.setAttribute('class', 'col-12');
+                    coldiv.style = 'margin-bottom:1rem';
+                    coldiv.innerHTML =
+                        '<p style="margin-bottom:0;">' + '<a href="/Blogs/BlogPosts/' + response[i].id + '">' + response[i].название + '</a>' + '</p>' +
+                        '<p style="margin-bottom:0; font-size:12px">' + response[i].тематика + '</p>' +
+                        '<p style="margin-bottom:0; font-size:12px">' + response[i].подписчики + ' подписчиков' + '</p>' +
+                        '<p style="margin-bottom:0">' + '<a style="font-size:12px" href="" class="btn btn-primary">Отписаться</a>';
+                    blogdiv.appendChild(coldiv);
+                    div.appendChild(blogdiv);
+                }
+            }
+        }
+        body = "id=" + data.id + "&pattern=" + data.pattern;
+        request.open("POST", "/Blogs/FindByName");
+        request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        request.onreadystatechange = reqReadyStateChange;
+        request.send(body);
+    });
+    let subscription = document.getElementsByClassName("subscription");
+    for (let i = 0; i < subscription.length; i++) {
+        subscription[i].addEventListener("click", function (event) {
+            event.preventDefault();
+            let btn = event.target;
+            let data = { id: btn.id };
+            let request = new XMLHttpRequest();
+            function reqReadyStateChange() {
+                if (request.readyState == 4 && request.status == 200) {
+                    let response = JSON.parse(request.responseText);
+                    let a = event.target;
+                    if (response.action == "subscribe") {
+                        a.classList.toggle('btn-primary');
+                        a.classList.toggle('btn-light');
+                        a.innerText = "Вы подписанны";
+                    }
+                    else {
+                        a.classList.toggle('btn-primary');
+                        a.classList.toggle('btn-light');
+                        a.innerText = "Подписаться";
+                    }
+                }
+            }
+            body = "id=" + data.id;
+            request.open("POST", "/Blogs/Subscribe");
+            request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            request.onreadystatechange = reqReadyStateChange;
+            request.send(body);
+        });
+    }
+</script>

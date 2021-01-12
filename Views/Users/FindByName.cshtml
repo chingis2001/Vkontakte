@@ -1,0 +1,80 @@
+﻿@model List<Vkontakte.Models.Пользователь>
+@{
+    ViewData["Title"] = "FindFriends";
+}
+<div class="row">
+    <div class="col-12" style="background-color: #ffffff; border-radius: 4px;">
+        <div class="row" style="margin-top: 1rem; margin-left: 1rem">
+            <div class="col-3">
+                <h5>Люди @Model.Count()</h5>
+            </div>
+        </div>
+        <div class="row" style="margin-bottom:1rem">
+            <div class="col-12" style="margin-top:0.4rem">
+                <form asp-controller="Users" asp-action="FindByName">
+                    <input name="pattern" placeholder="Введите запрос" id="FindByName" class="form-control" type="text" style="border-right:none; border-left:none" />
+                    <button type="submit" class="d-none"></button>
+                </form>
+            </div>
+        </div>
+        @foreach (var item in Model)
+        {
+            <div class="row" style="margin-left: 0.6rem; margin-bottom: 1rem">
+                <div class="col-8">
+                    <p>@item.Фамилия @item.Имя</p>
+                    <p>@item.Город</p>
+                </div>
+                <div class="col-4">
+                    <a id="@item.ID" onclick="sendFriendRequest(this)" href="##" class="btn btn-primary">Добавить в друзья</a>
+                </div>
+            </div>
+        }
+        @if (Model.Count() == 0)
+        {
+            <div class="row" style="margin-left: 0.6rem; margin-bottom: 1rem">
+                <div class="col-8">
+                    <p>Запросов нет</p>
+                </div>
+            </div>
+        }
+        <div class="row" style="width: 5rem"></div>
+    </div>
+</div>
+@section Additional
+{
+    <div class="row" style="margin-left:0.4rem">
+        <div class="col-12" style="background-color: #ffffff; border-radius: 4px;">
+            <div class="row" style="margin-top:0.4rem">
+                <div class="col-12">
+                    <p>
+                        <a asp-action="Index" asp-controller="Friends">Мои друзья</a>
+                    </p>
+                </div>
+                <div class="col-12">
+                    <p>
+                        <a asp-action="FindUsers" asp-controller="Users">Поиск друзей</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<script>
+    let idElem = "";
+    const hubConnection = new signalR.HubConnectionBuilder().withUrl("/chat").build();
+    hubConnection.on("FriendRequest", function (response) {
+        if (response == "Sended") {
+            let a = document.getElementById(idElem);
+            a.classList.toggle("btn-primary");
+            a.classList.toggle("btn-light");
+            a.innerHTML = "Запрос отправлен";
+            a.onclick = null;
+        }
+    });
+    function sendFriendRequest(element) {
+        let friendId = element.id;
+        idElem = element.id;
+        hubConnection.invoke("SendFriendRequest", friendId);
+    }
+    hubConnection.start();
+</script>

@@ -1,0 +1,106 @@
+﻿@model List<Vkontakte.Models.UsersWithCommon>
+@{
+    Guid IdUser = Guid.Parse(Context.User.Identity.Name);
+    ViewData["Title"] = "FindFriends";
+}
+<div class="row">
+    <div id="UsersCol" class="col-12" style="background-color: #ffffff; border-radius: 4px;">
+        <div class="row" style="margin-top:0.4rem">
+            <div class="col-9">
+                <p>Предолженные друзья</p>
+            </div>
+            <div class="col-3">
+                <a style="font-size:12px">Расширенный поиск</a>
+            </div>
+        </div>
+        <div id="findInput" class="row" style="margin-bottom:1rem">
+            <div class="col-12" style="margin-top:0.4rem">
+                <form asp-controller="Users" asp-action="FindByName">
+                    <input name="pattern" placeholder="Введите запрос" id="FindByName" class="form-control" type="text" style="border-right:none; border-left:none" />
+                    <button type="submit" class="d-none"></button>
+                </form>
+            </div>
+        </div>
+        @for (int i = 0; i < Model.Count(); i += 3)
+        {
+            <div class="row" id="usersTable" style="margin-left:0.4rem; margin-bottom:0.4rem">
+                @for (int j = 0; j < 3; j++)
+                {
+                    @if (Model[i + j] != null)
+                    {
+                        <div class="col-4">
+                            <div class="row">
+                                <div style="font-size:12px" class="col-7">
+                                    <p style="margin-bottom:0">@Model[i + j].Имя @Model[i + j].Фамилия</p>
+                                    <p>Общие друзья: @Model[i + j].Количество_общих_друзей</p>
+                                </div>
+                                <div class="col-3">
+                                    <svg style="cursor:pointer" onclick="sendFriendRequest(this)" id="@Model[i+j].ID" width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-person-plus-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm7.5-3a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+         }   
+    </div>
+</div>
+@section Additional
+{
+    <div class="row" style="margin-left:0.4rem">
+        <div class="col-12" style="background-color: #ffffff; border-radius: 4px;">
+            <div class="row" style="margin-top:0.4rem">
+                <div class="col-12">
+                    <p>
+                        <a asp-action="Index" asp-controller="Friends">Мои друзья</a>
+                    </p>
+                </div>
+                <div class="col-12">
+                    <p>
+                        <a asp-action="FindUsers" asp-controller="Users">Поиск друзей</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<script>
+    let page = 1;
+    onscroll = function () {
+        if (window.scrollY + 1 >= document.documentElement.scrollHeight - document.documentElement.clientHeight) {
+            let data = { page: page };
+            let request = new XMLHttpRequest();
+            function reqReadyStateChange() {
+                if (request.readyState == 4 && request.status == 200) {
+                    page = page + 1;
+                    response = request.responseText;
+                    let div = document.getElementById('UsersCol');
+                    div.innerHTML = div.innerHTML + response;
+                }
+            }
+            body = "page=" + data.page;
+            request.open("POST", "/Users/FindUsers");
+            request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            request.onreadystatechange = reqReadyStateChange;
+            request.send(body);
+        }
+    };
+    let idElem = "";
+    const hubConnection = new signalR.HubConnectionBuilder().withUrl("/chat").build();
+    hubConnection.on("FriendRequest", function (response) {
+        if (response == "Sended")
+        {
+            let svg = document.getElementById(idElem);
+            svg.innerHTML = '<path fill-rule="evenodd" d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm9.854-2.854a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>';
+            svg.onclick = null;
+        }    
+    });
+    function sendFriendRequest(element) {
+        let friendId = element.id;
+        idElem = element.id;
+        hubConnection.invoke("SendFriendRequest", friendId);
+    }
+    hubConnection.start();
+</script>

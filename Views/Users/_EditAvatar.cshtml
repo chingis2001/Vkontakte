@@ -1,0 +1,60 @@
+﻿@model Vkontakte.Models.AvatarViewModel
+<div style="overflow-y:scroll" id="PostBanner" class="post-banner">
+</div>
+<div id="PostContent" style="position:fixed;top: 100px; width:654px; background: #ffffff; border-radius: 4px; z-index:1000000;">
+    <div class="col-12">
+        <div class="row">
+            <div class="col-12">
+                <form method="POST" asp-action="EditAvatar" asp-controller="Users" enctype="multipart/form-data">
+                    <div class="row" style="background-color:#e5ebf1; border-top-left-radius: 4px; border-top-right-radius:4px">
+                        <div class="col-11">
+                            <h5 style="margin-top:1rem; margin-bottom:1rem; font-size:14px; color:#000000">Загрузка новой фотографии</h5>
+                        </div>
+                        <div class="col-1">
+                            <p onclick="closeDetail(this)" style="cursor:pointer" class="closeComments">X</p>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:2rem; margin-bottom: 2rem">
+                        <div class="col-12" style="text-align:center">
+                            <p style="margin:0.4rem 1rem 0.4rem 1rem; font-size:14px">
+                                Друзьям будет проще узнать вас, если вы загрузите свою настоящую фотографию.
+                                Вы можете загрузить изображение в формате JPG, GIF или PNG.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-bottom:1rem">
+                        <div id="photosplace" class="col-12 justify-content-center">
+                        </div>
+                    </div>
+                    <input name="ID_Пользователя" type="hidden" value="@Guid.Parse(Context.User.Identity.Name)" />
+                    <div class="row" style="margin-bottom:2rem">
+                        <div class="col-12 justify-content-center">
+                            <label for="Avatar" class="btn btn-primary" style="font-size:12px;margin-left:250px;">Загрузить файл</label>
+                            <input onchange="loadFile(this)" id="Avatar" class="d-none" name="Avatar" type="file" />
+                        </div>
+                    </div>
+                    <div class="row" style="margin-bottom:2rem">
+                        <div class="col-12 justify-content-center">
+                            <button type="submit" class="btn btn-light" style="font-size:12px;margin-left:250px">Обновить</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function (event) {
+        let Content = document.getElementById("PostContent");
+        let margins = document.documentElement.clientWidth - Content.offsetWidth;
+        Content.style.left = margins / 2 + "px";
+        window.onresize = function () {
+            margins = document.documentElement.clientWidth - Content.offsetWidth;
+            Content.style.left = margins / 2 + "px";
+        }
+        function closeDetail(element)
+        {
+
+        }
+    });
+</script>

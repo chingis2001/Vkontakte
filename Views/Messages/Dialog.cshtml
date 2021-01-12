@@ -1,0 +1,132 @@
+﻿@using Microsoft.AspNetCore.Http
+@model Vkontakte.Models.MessagessWithUsersViewModel
+@{
+    Guid IdUser = Guid.Parse(Context.User.Identity.Name);
+    ViewData["Title"] = Model.пользователи.FirstOrDefault(t => t.ID != IdUser);
+}
+<div class="row">
+    <div id="messageslist" class="col-12" style="margin-bottom:0; background-color: #ffffff; border-radius: 4px; margin-bottom: 0">
+        <div class="row" style="margin-top: 0.4rem; border-bottom: 2px solid #e7e8ec; margin-bottom: 1rem; height:46px">
+            <div class="col-12">
+                <h5 style="padding-bottom:0.4rem">@Model.пользователи.FirstOrDefault(t => t.ID != IdUser).Имя @Model.пользователи.FirstOrDefault(t => t.ID != IdUser).Фамилия</h5>
+            </div>
+            <input type="hidden" value="@Model.пользователи.FirstOrDefault(t => t.ID != IdUser).ID" id="IdConvertant" />
+        </div>
+        <div id="dialog" class="row dialog" style="overflow-y: scroll; scrollbar-width: none;">
+            <div id="dialogwindow" class="col-12">
+                @if (Model.сообщения.Count() == 0)
+                {
+                    <p id="nomessages">Вы пока не написали ни одного сообщения</p>
+                }
+                else
+                {
+                    @foreach (var item in Model.сообщения)
+                    {
+                        <div class="row d-block" style="border-bottom: 1px solid #e7e8ec">
+                            <div class="col-12">
+                                <div class="row">
+                                    <div class="col-8">
+                                        <p style="font-size: 12px; margin-bottom:0">
+                                            <a asp-controller="Users" asp-action="GetUserInfo" asp-route-id="@Model.пользователи.FirstOrDefault(t=>t.ID == item.ID_Пользователя).ID">@Model.пользователи.FirstOrDefault(t => t.ID == item.ID_Пользователя).Фамилия @Model.пользователи.FirstOrDefault(t => t.ID == item.ID_Пользователя).Имя @item.Дата_отправки.ToShortTimeString()</a>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <p style="font-size:12px">@item.Текст_сообщения</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+        <div class="row" style="height: 100px">
+            <div class="col-10">
+                <textarea id="messagetext" style="margin-top: 1rem;font-size:12px" placeholder="Напишите своё сообщение" rows="2" class="form-control"></textarea>
+            </div>
+            <div class="col-2">
+                @if (Model.сообщения.FirstOrDefault() != null)
+                {
+                    <button style="font-size: 12px; margin-top: 1.5rem" id="@Model.сообщения.FirstOrDefault().ID_беседы" onclick="sendMessage(this)" type="submit" class="btn btn-primary">
+                        Отправить
+                    </button>
+                }
+                else
+                {
+                    <button style="font-size: 12px; margin-top: 1.5rem" id="" onclick="sendMessage(this)" type="submit" class="btn btn-primary">
+                        Отправить
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    let conv_id = "";
+    let idElem = "";
+    const hubConnection = new signalR.HubConnectionBuilder().withUrl("/chat").build();
+    hubConnection.on("MessageSend", function (response) {
+        conv_id = response.conv_id;
+        let div = document.getElementById("dialogwindow");
+        if (document.getElementById('nomessages')) {
+            document.getElementById('nomessages').parentNode.removeChild(document.getElementById('nomessages'));
+        }
+        let row = document.createElement("div");
+        row.setAttribute('class', 'row d-block');
+        row.setAttribute('style', 'border-bottom: 1px solid #e7e8ec');
+        let col = document.createElement('div');
+        col.setAttribute('class', 'col-12');
+        let row2 = document.createElement('div');
+        row2.setAttribute('class', 'row');
+        let col2 = document.createElement('div');
+        col2.setAttribute('class', 'col-8');
+        let p = document.createElement('p');
+        p.setAttribute('style', 'font-size: 12px; margin-bottom:0');
+        let ap = document.createElement('a');
+        ap.setAttribute('href', '/Users/GetUserInfo' + response.user_send);
+        ap.innerHTML = response.firstname + ' ' + response.secondname + ' ' + response.date;
+        p.appendChild(ap);
+        col2.appendChild(p);
+        row2.appendChild(col2);
+        col.appendChild(row2);
+        let row3 = document.createElement('div');
+        row3.setAttribute('class', 'row');
+        let col3 = document.createElement('div');
+        col3.setAttribute('class', 'col-12');
+        let p2 = document.createElement('p');
+        p2.setAttribute('style', 'font-size:12px');
+        p2.innerHTML = response.text;
+        col3.appendChild(p2);
+        row3.appendChild(col3);
+        col.appendChild(row3);
+        row.appendChild(col);
+        div.appendChild(row);
+    });
+    function sendMessage(element) {
+        if (conv_id == "")
+            conv_id = element.id;
+        idElem = element.id;
+        let text = document.getElementById('messagetext').value;
+        let secondconvid = document.getElementById('IdConvertant').value;
+        hubConnection.invoke("SendMessage", conv_id, text, secondconvid);
+    }
+    hubConnection.start();
+    document.addEventListener("DOMContentLoaded", function (event) {
+        let messageslist = document.getElementById("messageslist");
+        let headheight = document.getElementById("header").offsetHeight;
+        let newheight = document.documentElement.clientHeight - headheight - 50;
+        messageslist.style.height = newheight + "px";
+        let dialog = document.getElementById("dialog");
+        let dialogheigth = newheight - 54 - 100;
+        dialog.style.height = dialogheigth + "px";
+        dialog.scrollTop = dialog.scrollHeight;
+        window.onresize = function () {
+            newheight = document.documentElement.clientHeight - headheight - 50;
+            messageslist.style.height = newheight + "px";
+            dialogheigth = newheight - 54 - 100;
+            dialog.style.height = dialogheigth + "px";
+        }
+    });
+</script>

@@ -1,0 +1,117 @@
+﻿@using Microsoft.AspNetCore.Http
+@model List<Vkontakte.Models.Дружба>
+@{
+    ViewData["Title"] = "Requests";
+}
+
+<div class="row">
+    <div id="RequestWindow" class="col-12" style="background-color: #ffffff; border-radius: 4px;">
+        <div class="row" style="border-bottom: 1px solid #f1f1f4; margin-left: 1rem; margin-bottom: 1rem">
+            <div class="col-2 topnav">
+                @if (ViewData["type"].ToString() == "inner")
+                {
+                    <a id="Requests" asp-controller="Friends" asp-action="Requests" asp-route-type="inner" class="active">Входящие</a>
+                }
+                else
+                {
+                    <a id="Requests" asp-controller="Friends" asp-action="Requests" asp-route-type="inner">Входящие</a>
+                }
+            </div>
+            <div style="padding-left:0; padding-right:0" class="col-2 topnav">
+                @if (ViewData["type"].ToString() == "outer")
+                {
+                    <a class="active" asp-controller="Friends" asp-action="Requests" asp-route-type="outer">Исходящие</a>
+                }
+                else
+                {
+                    <a asp-controller="Friends" asp-action="Requests" asp-route-type="outer">Исходящие</a>
+                }
+            </div>
+        </div>
+        @foreach (var item in Model)
+        {
+            <div class="row" style="border-bottom: 1px solid #f1f1f4; margin-bottom: 1rem; margin-left: 0.4rem">
+                <div class="col-12" style="margin-bottom: 1rem">
+                    <p style="padding-bottom:0; margin-bottom: 0.4rem">@item.Друг.Фамилия @item.Друг.Имя</p>
+                    @if (item.Код_статуса==5)
+                    {
+                        <a href="##" onclick="addToFriends(this)" id="@item.ID_Друга" class="btn btn-primary" style="font-size:12px">Добавить в друзья</a>
+                    }
+                    else 
+                    {
+                        <a href="##" onclick="##" id="@item.ID_Друга" class="btn btn-primary" style="font-size:12px">Отмена заявки</a>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+@section Additional
+{
+    <div class="row" style="margin-left:0.4rem">
+        <div class="col-12" style="background-color: #ffffff; border-radius: 4px;">
+            <div class="row" style="margin-top:0.4rem">
+                <div class="col-12">
+                    <p>
+                        <a asp-action="Index" asp-controller="Friends">Мои друзья</a>
+                    </p>
+                </div>
+                <div class="col-12">
+                    <p>
+                        <a asp-action="Requests" asp-controller="Friends">Заявки в друзья</a>
+                    </p>
+                </div>
+                <div class="col-12">
+                    <p>
+                        <a asp-action="FindUsers" asp-controller="Users">Поиск друзей</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<script>
+    let idElem = "";
+    const hubConnection = new signalR.HubConnectionBuilder().withUrl("/chat").build();
+    hubConnection.on("FriendRequest", function (response) {
+        if (response.type == "Recived") {
+            let a = document.getElementById("Requests");
+            if (a.className == "active")
+            {
+                let div = document.getElementById("RequestWindow");
+                let row = document.createElement("div");
+                row.setAttribute('class', 'row');
+                row.setAttribute('style', 'border-bottom: 1px solid #f1f1f4; margin-bottom: 1rem; margin-left: 0.4rem');
+                let col = document.createElement('div');
+                col.setAttribute('class', 'col-12');
+                col.setAttribute('style', 'margin-bottom: 1rem');
+                let p = document.createElement('p');
+                p.setAttribute('style', 'padding-bottom:0; margin-bottom: 0.4rem');
+                p.innerHTML = response.firstname + " " + response.secondname;
+                let a = document.createElement('a');
+                a.setAttribute('class', 'btn btn-primary');
+                a.setAttribute('id', response.id);
+                a.setAttribute('style', 'font-size:12px');
+                a.setAttribute('href', '##');
+                a.setAttribute('onclick', 'addToFriends(this)');
+                a.innerHTML = 'Добавить в друзья';
+                col.appendChild(p);
+                col.appendChild(a);
+                row.appendChild(col);
+                div.appendChild(row);
+            }
+        }
+    });
+    hubConnection.on("FriendAdded", function (response) {
+        if (response == "Accepted") {
+            let a = document.getElementById(idElem).parentNode.parentNode;
+            a.parentNode.removeChild(a);
+        }
+    });
+    function addToFriends(element) {
+        let friendId = element.id;
+        idElem = element.id;
+        hubConnection.invoke("AddToFriends", friendId);
+    }
+    hubConnection.start();
+</script>

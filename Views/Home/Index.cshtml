@@ -1,0 +1,307 @@
+﻿@using Microsoft.AspNetCore.Http;
+@model List<Vkontakte.Models.PostBlogCommentActionViewModel>
+@{
+    ViewData["Title"] = "Home Page";
+    Guid IdUser = Guid.Parse(Context.User.Identity.Name);
+}
+<div id="maindiv" class="row">
+    @foreach (var item in Model)
+    {
+    <div class="col-12" style="background-color: #ffffff; border-radius: 4px; margin-bottom: 1rem">
+        <div class="row">
+            <div class="col-12">
+                <h6 style="margin:0.4rem 1rem 0.4rem 1rem; font-size:12px; color:#4d5885">@item.Блог.Название</h6>
+                <p style=" margin:0.4rem 1rem 0.4rem 1rem; font-size: 10px">@item.Запись.Дата_публикации</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <p style="margin:0.4rem 1rem 0.4rem 1rem; font-size:12px">@item.Запись.Текст</p>
+            </div>
+        </div>
+        <div class="row">
+            <div style="padding-left:30px" class="col-12">
+                @if (item.Данные.Count() > 3)
+                {
+                    @foreach (var data in item.Данные)
+                    {
+                        <img style="max-height:200px; max-width:200px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(data.Data))" />
+                    }
+                }
+                @if (item.Данные.Count() == 3)
+                {
+                    @for (int i = 0; i < item.Данные.Count(); i++)
+                    {
+                        @if (i == 0)
+                        {
+                            <img style="max-height:350px; max-width:280px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(item.Данные.ElementAt(i).Data))" />
+                        }
+                        else
+                        {
+                            <img style="max-height:175px; max-width:280px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(item.Данные.ElementAt(i).Data))" />
+                        }
+                    }
+                }
+                @if (item.Данные.Count() == 2)
+                {
+                    @foreach (var data in item.Данные)
+                    {
+                        <img style="max-height:350px; max-width:280px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(data.Data))" />
+                    }
+                }
+                @if (item.Данные.Count() == 1)
+                {
+                    @foreach (var data in item.Данные)
+                    {
+                        <img style="max-height:350px; max-width:600px; float:left;" src="data:image/jpeg;base64,@(Convert.ToBase64String(data.Data))" />
+                    }
+                }
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-1"></div>
+            <div class="col-10" style="margin-top:1rem;margin-bottom:1rem; border-bottom: 1px solid #adb2bc">
+                <div class="col-1"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-1" style="margin-left:1rem; padding: 0">
+                <p style="font-size:12px; margin-left: 1rem">
+                    @if (item.Дествия.Contains(item.Дествия.FirstOrDefault(t => t.Пользователь.ID == IdUser && t.Код == 1)))
+                    {
+                        <svg onclick="addLike(this)" style="cursor:pointer" id="@item.Запись.ID_Записи" width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-heart likesbtn" fill="#ff0000" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z" />
+                        </svg>
+                        @item.Дествия.Where(t => t.Код == 1).ToList().Count()
+                    }
+                    else
+                    {
+                        <svg onclick="addLike(this)" style="cursor:pointer" id="@item.Запись.ID_Записи" width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-heart likesbtn" fill="#000000" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M8 2.748l-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143c.06.055.119.112.176.171a3.12 3.12 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15z" />
+                        </svg>
+                        @item.Дествия.Where(t => t.Код == 1).ToList().Count()
+                    }
+                </p>
+            </div>
+            <div class="col-1" style="padding: 0">
+                <p id="@item.Запись.ID_Записи" style="font-size:12px; margin-left: 1rem">
+                    <svg onclick="getPostComents(this)" style="cursor: pointer" width="1em" height="1em" viewBox="0 0 16 16" class="comentbtn bi bi-chat-square" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" d="M14 1H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2.5a2 2 0 0 1 1.6.8L8 14.333 9.9 11.8a2 2 0 0 1 1.6-.8H14a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 0a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2.5a1 1 0 0 1 .8.4l1.9 2.533a1 1 0 0 0 1.6 0l1.9-2.533a1 1 0 0 1 .8-.4H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z" />
+                    </svg>
+                    @item.Коментарии.Count()
+                </p>
+            </div>
+            <div class="col-8"></div>
+            <div class="col-1" style="padding: 0">
+                <p style="font-size:12px; margin-left: 1rem">
+                    <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-eye-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z" />
+                        <path fill-rule="evenodd" d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" />
+                    </svg>
+                    @item.Дествия.Where(t => t.Код == 2).ToList().Count()
+                </p>
+            </div>
+        </div>
+    </div>
+    }
+</div>
+@section Additional
+{
+    <div class="row" style="margin-left:0.4rem">
+        <div class="col-12" style="background-color: #ffffff; border-radius: 4px;">
+            <div class="row" style="margin-top:0.4rem">
+                <div class="col-12">
+                    <p>
+                        <a id="Index" onclick="changeType(this)" asp-action="Index" asp-controller="Home">Все записи</a>
+                    </p>
+                </div>
+                <div class="col-12">
+                    <p>
+                        <a id="GetTrends" onclick="changeType(this)" asp-action="GetTrends" asp-controller="Home">Тренды</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<script>
+    let page = 1;
+    let Controller = "Index";
+    function changeType(element)
+    {
+        Controller = element.id;
+    }
+    onscroll = function () {
+        if (window.scrollY + 1 >= document.documentElement.scrollHeight - document.documentElement.clientHeight) {
+            let data = { page: page };
+            let request = new XMLHttpRequest();
+            function reqReadyStateChange() {
+                if (request.readyState == 4 && request.status == 200) {
+                    page = page + 1;
+                    response = request.responseText;
+                    let div = document.getElementById('maindiv');
+                    div.innerHTML = div.innerHTML + response;
+                }
+            }
+            body = "page=" + data.page;
+            let url = "/Home/" + Controller;
+            request.open("POST", url);
+            request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            request.onreadystatechange = reqReadyStateChange;
+            request.send(body);
+        }
+    };
+    function getPostComents(element) {
+        let data = { id: element.parentNode.id };
+        let request = new XMLHttpRequest();
+        function reqReadyStateChanche() {
+            if (request.readyState == 4 && request.status == 200) {
+                let response = request.responseText;
+                let div = document.getElementById('maindiv');
+                div.innerHTML = div.innerHTML + response;
+            }
+        }
+        let body = "id=" + data.id;
+        request.open("POST", "Home/GetPostComents");
+        request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        request.onreadystatechange = reqReadyStateChanche;
+        request.send(body);
+    }
+    function addLike(element) {
+        var data = { id: element.id };
+        var request = new XMLHttpRequest();
+        function reqReadyStateChanche() {
+            if (request.readyState == 4 && request.status == 200) {
+                let reqstrings = request.responseText.split(";");
+                let pelem = element.parentNode;
+                while (pelem.firstChild)
+                    pelem.removeChild(pelem.firstChild);
+                if (reqstrings[0] == "add") {
+                    pelem.innerHTML = '<svg onclick="addLike(this)" style="cursor:pointer" id="' + data.id + '" width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-heart likesbtn" fill="#ff0000" xmlns="http://www.w3.org/2000/svg">' +
+                        '<path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/>' +
+                        '</svg> ' + reqstrings[1];
+                }
+                else {
+                    pelem.innerHTML = '<svg onclick="addLike(this)" style="cursor:pointer" id="' + data.id + '" width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-heart likesbtn" fill="#000000" xmlns="http://www.w3.org/2000/svg">' +
+                        '<path fill-rule="evenodd" d="M8 2.748l-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143c.06.055.119.112.176.171a3.12 3.12 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15z" />' +
+                        '</svg> ' + reqstrings[1];
+                }
+            }
+        }
+        var body = "id=" + data.id;
+        request.open("POST", "Home/LikeAdd");
+        request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        request.onreadystatechange = reqReadyStateChanche;
+        request.send(body);
+    }
+    function closeDetail(element) {
+        let postBanner = document.getElementById('PostBanner');
+        let postContent = document.getElementById('PostContent');
+        postBanner.parentElement.removeChild(postBanner);
+        postContent.parentElement.removeChild(postContent);
+    }
+    const hubConnection = new signalR.HubConnectionBuilder().withUrl("/chat").build();
+    hubConnection.on("Publicated", function (response) {
+        let render = function (response) {
+            let postcol = document.createElement('div');
+            postcol.setAttribute('class', 'col-12');
+            postcol.setAttribute('style', 'background-color: #ffffff; border-radius: 4px; margin-bottom: 1rem');
+            let firstrow = document.createElement('div');
+            firstrow.setAttribute('class', 'row');
+            let secondrow = document.createElement('div');
+            secondrow.setAttribute('class', 'row');
+            let thirdrow = document.createElement('div');
+            thirdrow.setAttribute('class', 'row');
+            let fourthrow = document.createElement('div');
+            fourthrow.setAttribute('class', 'row');
+            let blogcol = document.createElement('div');
+            blogcol.setAttribute('class', 'col-12');
+            blogcol.setAttribute('style', 'background-color: #ffffff; border-radius: 4px; margin-bottom: 1rem');
+            let blogname = document.createElement('h6');
+            blogname.setAttribute('style', 'margin:0.4rem 1rem 0.4rem 1rem; font-size:12px; color:#4d5885');
+            blogname.innerHTML = response.блог;
+            let datetime = document.createElement('p');
+            datetime.setAttribute('style', 'margin:0.4rem 1rem 0.4rem 1rem; font-size: 10px');
+            datetime.innerHTML = response.дата_публикации;
+            blogcol.appendChild(blogname);
+            blogcol.appendChild(datetime);
+            let textcol = document.createElement('div');
+            textcol.setAttribute('class', 'col-12');
+            let text = document.createElement('p');
+            text.setAttribute('style', 'margin:0.4rem 1rem 0.4rem 1rem; font-size:12px');
+            text.innerHTML = response.текст;
+            textcol.appendChild(text);
+            thirdrow.innerHTML = '<div class="col-1"></div><div class="col-10" style="margin-top:1rem;margin-bottom:1rem; border-bottom: 1px solid #adb2bc"><div class="col-1"></div></div>';
+            firstrow.appendChild(blogcol);
+            secondrow.appendChild(textcol);
+            let likecol = document.createElement('div');
+            likecol.setAttribute('class', 'col-2');
+            likecol.setAttribute('style', 'margin-left:1rem; padding: 0');
+            let likes = document.createElement('p');
+            likes.setAttribute('style', 'font-size:12px; margin-left: 1rem');
+            likes.innerHTML = '<svg onclick="addLike(this)" style="cursor:pointer" id="' + response.id_записи + '" width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-heart likesbtn" fill="#000000" xmlns="http://www.w3.org/2000/svg">' +
+                '<path fill-rule="evenodd" d="M8 2.748l-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143c.06.055.119.112.176.171a3.12 3.12 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15z" />' +
+                '</svg>' + ' ' + response.лайки;
+            let comments = document.createElement('p');
+            let comentcol = document.createElement('div');
+            likecol.appendChild(likes);
+            comentcol.setAttribute('class', 'col-2');
+            comentcol.setAttribute('style', 'padding: 0');
+            comments.setAttribute('id', response.id_записи);
+            comments.setAttribute('style', 'font-size:12px; margin-left: 1rem');
+            comments.innerHTML = ' <svg onclick="getPostComents(this)" style="cursor: pointer" width="1em" height="1em" viewBox="0 0 16 16" class="comentbtn bi bi-chat-square" fill="currentColor" xmlns="http://www.w3.org/2000/svg">' +
+                '<path fill-rule="evenodd" d="M14 1H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2.5a2 2 0 0 1 1.6.8L8 14.333 9.9 11.8a2 2 0 0 1 1.6-.8H14a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 0a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2.5a1 1 0 0 1 .8.4l1.9 2.533a1 1 0 0 0 1.6 0l1.9-2.533a1 1 0 0 1 .8-.4H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z" />' +
+                '</svg>' + ' ' + response.коментарии;
+            comentcol.appendChild(comments);
+            let buffcol = document.createElement('div');
+            buffcol.setAttribute('class', 'col-5');
+            let viewcol = document.createElement('div');
+            viewcol.setAttribute('class', 'col-2');
+            let views = document.createElement('p');
+            views.setAttribute('style', 'font-size:12px; margin-left: 1rem');
+            views.innerHTML = '<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-eye-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d = "M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z" /><path fill-rule="evenodd" d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" /></svg >' +
+                ' ' + 1;
+            viewcol.appendChild(views);
+            fourthrow.appendChild(likecol);
+            fourthrow.appendChild(comentcol);
+            fourthrow.appendChild(buffcol);
+            fourthrow.appendChild(viewcol);
+            postcol.appendChild(firstrow);
+            postcol.appendChild(secondrow);
+            postcol.appendChild(thirdrow);
+            postcol.appendChild(fourthrow);
+            let firstElem = document.getElementById("maindiv").firstChild;
+            document.getElementById("maindiv").insertBefore(postcol, firstElem);
+            if (firstElem.id == "empty") {
+                document.getElementById("maindiv").removeChild(firstElem);
+            }
+        }
+        if (document.getElementById("BlogId")) {
+            if (document.getElementById("BlogId").value == response.id_блога)
+                render(response);
+        }
+        else {
+            if (document.location.pathname == '/') {
+                render(response);
+            }
+        }
+    });
+    hubConnection.start();
+    document.addEventListener("DOMContentLoaded", function () {
+        let contentRow = document.getElementById("contentRow");
+        let post = document.getElementById("postwithcomments");
+        let bannerwidth = document.documentElement.clientWidth - 665;
+        if (post)
+        {
+            post.style.marginLeft = bannerwidth + "px";
+            contentRow.style.height = document.documentElement.clientHeight + "px";
+            alert(post.style.marginLeft);
+            window.onresize = function () {
+                alert("Hello blyat");
+                newheight = document.documentElement.clientHeight;
+                contentRow.style.height = newheight + "px";
+                post.style.marginLeft = bannerwidth + "px";
+            }
+        }
+    });
+</script>

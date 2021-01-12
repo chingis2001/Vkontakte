@@ -1,0 +1,115 @@
+﻿@model Vkontakte.Models.PostBlogCommentActionViewModel
+@{
+    Guid IdUser = Guid.Parse(Context.User.Identity.Name);
+}
+<div id="PostBanner" class="post-banner">
+</div>
+<div id="PostContent" class="col-12" style="z-index:1000000;">
+    <div class="row" style="position: fixed; top: 20px; left: 0; overflow-y: scroll;" id="contentRow">
+        <div id="postwithcomments" style="margin-left:auto; margin-right:auto;width:665px; background: #ffffff; border-radius: 4px">
+            <div class="row"><div class="col-11"></div><div class="col-1"><p onclick="closeDetail(this)" style="cursor:pointer" class="closeComments">X</p></div></div>
+            <div class="row">
+                <div class="col-12">
+                    <h6 style="margin:0.4rem 1rem 0.4rem 1rem; font-size:12px; color:#4d5885">@Model.Блог.Название</h6>
+                    <p style=" margin:0.4rem 1rem 0.4rem 1rem; font-size: 10px">@Model.Запись.Дата_публикации</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <p style="margin:0.4rem 1rem 0.4rem 1rem; font-size:12px">@Model.Запись.Текст</p>
+                </div>
+            </div>
+            <div class="row">
+                <div style="padding-left:30px" class="col-12">
+                    @if (Model.Данные.Count() > 3)
+                    {
+                        @foreach (var data in Model.Данные)
+                        {
+                            <img style="max-height:200px; max-width:200px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(data.Data))" />
+                        }
+                    }
+                    @if (Model.Данные.Count() == 3)
+                    {
+                        @for (int i = 0; i < Model.Данные.Count(); i++)
+                        {
+                            @if (i == 0)
+                            {
+                                <img style="max-height:350px; max-width:280px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(Model.Данные.ElementAt(i).Data))" />
+                            }
+                            else
+                            {
+                                <img style="max-height:175px; max-width:280px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(Model.Данные.ElementAt(i).Data))" />
+                            }
+                        }
+                    }
+                    @if (Model.Данные.Count() == 2)
+                    {
+                        @foreach (var data in Model.Данные)
+                        {
+                            <img style="max-height:350px; max-width:280px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(data.Data))" />
+                        }
+                    }
+                    @if (Model.Данные.Count() == 1)
+                    {
+                        @foreach (var data in Model.Данные)
+                        {
+                            <img style="max-height:350px; max-width:600px; float:left;" src="data:image/jpeg;base64,@(Convert.ToBase64String(data.Data))" />
+                        }
+                    }
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-1"></div>
+                <div class="col-10" style="margin-top:1rem;margin-bottom:1rem; border-bottom: 1px solid #adb2bc">
+                    <div class="col-1"></div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-1" style="margin-left:2rem; padding: 0">
+                    @if (ViewBag.isLike)
+                    {
+                        <svg onclick="addLike(this)" style="cursor:pointer" id="@Model.Запись.ID_Записи" width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-heart likesbtn" fill="#ff0000" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z" />
+                        </svg>
+                        @Model.Дествия.Where(t => t.Код == 1).ToList().Count()
+                    }
+                    else
+                    {
+                        <svg onclick="addLike(this)" style="cursor:pointer" id="@Model.Запись.ID_Записи" width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-heart likesbtn" fill="#000000" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M8 2.748l-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143c.06.055.119.112.176.171a3.12 3.12 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15z" />
+                        </svg>
+                        @Model.Дествия.Where(t => t.Код == 1).ToList().Count()
+                    }
+                </div>
+                <div class="col-8"></div>
+                <div class="col-1" style="padding: 0">
+                    <p style="font-size:12px; margin-left: 1rem">
+                        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-eye-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z" />
+                            <path fill-rule="evenodd" d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" />
+                        </svg>
+                        @Model.Дествия.Where(t => t.Код == 2).ToList().Count()
+                    </p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    @foreach (var comment in Model.Коментарии)
+                    {
+                        <div class="row" style="border-bottom: 1px solid #adb2bc; margin-left:1rem; margin-right:1rem">
+                            <div class="col-12">
+                                <p style="font-size: 12px; color: #4d5885; padding:0; margin:0; margin-top: 0.4rem;">@comment.Пользователь.Имя @comment.Пользователь.Фамилия</p>
+                                <p style="font-size: 12px">@comment.Текст_коментария</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="row" style="margin-top:0.4rem; margin-bottom:0.4rem; position: sticky; bottom: 4px">
+                <div class="col-12">
+                    <textarea class="form-control" placeholder="Введите комментарий"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

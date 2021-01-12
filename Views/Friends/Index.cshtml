@@ -1,0 +1,140 @@
+﻿@using Microsoft.AspNetCore.Http;
+@model List<Vkontakte.Models.Пользователь>
+@{
+    ViewData["Title"] = "Friends";
+}
+<div class="row">
+    <div class="col-12" style="background-color: #ffffff; border-radius: 4px;">
+        <div class="row">
+            <div class="col-2 topnav">
+                <a id="AllFriends" class="active">Все друзья</a>
+            </div>
+            <div style="padding-left:0; padding-right:0" class="col-2 topnav">
+                <a id="OnlineFriends">Друзья онлайн</a>
+            </div>
+            <div class="col-5"></div>
+            <div class="col-3">
+                <a style="font-size:12px; margin-top:0.4rem" class="btn btn-primary justify-content-center" asp-action="FindUsers" asp-controller="Users">Найти Друзей</a>
+            </div>
+        </div>
+        <div class="row" style="margin-top:0.4rem">
+            <div class="col-9">
+                <input id="FindByName" class="form-control" type="text" style="border-right:none; border-left:none" /><input type="hidden" id="@ViewData["id"]" />
+            </div>
+        </div>
+        <div id="friendslist" class="row" style="margin-top:0.4rem; margin-left:1rem"><div class="col-12">
+                @foreach (var item in Model)
+                {
+                    <div class="row" style="margin-bottom: 1rem; border-bottom: 1px solid #f1f1f4">
+                        <div class="col-12" style="margin-bottom:1rem">
+                            <p style="margin-bottom:0">
+                                <a asp-controller="Users" asp-action="GetUserInfo" asp-route-id="@item.ID">@item.Фамилия @item.Имя</a>
+                            </p>
+                            <p style="margin-bottom:0">
+                                <a style="font-size:12px" asp-action="Dialog" asp-controller="Messages" asp-route-id="@item.ID" asp-route-typeid="friendid">Перейти к диалогу с пользователем</a>
+                            </p>
+                            <p style="margin-bottom:0">
+                                <a style="font-size:12px" asp-action="" asp-controller="">Удалить из друзей</a>
+                            </p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+@section Additional
+{
+    <div class="row" style="margin-left:0.4rem">
+        <div class="col-12" style="background-color: #ffffff; border-radius: 4px;">
+            <div class="row" style="margin-top:0.4rem">
+                <div class="col-12">
+                    <p>
+                        <a asp-action="Index" asp-controller="Friends">Мои друзья</a>
+                    </p>
+                </div>
+                <div class="col-12">
+                    <p>
+                        <a asp-action="Requests" asp-controller="Friends">Заявки в друзья</a>
+                    </p>
+                </div>
+                <div class="col-12">
+                    <p>
+                        <a asp-action="FindUsers" asp-controller="Users">Поиск друзей</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<script>
+    const hubConnection = new signalR.HubConnectionBuilder().withUrl("/chat").build();
+    hubConnection.on("FriendAdded", function (response) {
+        if (response.type == "Accepted") {
+            let a = document.getElementById("AllFriends");
+            if (a.className == "active") {
+                let div = document.getElementById("friendslist");
+                let row = document.createElement("div");
+                row.setAttribute('class', 'row');
+                row.setAttribute('style', 'margin-bottom: 1rem; border-bottom: 1px solid #f1f1f4');
+                let col = document.createElement('div');
+                col.setAttribute('class', 'col-12');
+                col.setAttribute('style', 'margin-bottom:1rem');
+                let p = document.createElement('p');
+                p.setAttribute('style', 'margin-bottom:0');
+                p.innerHTML = '<a href=/Users/UserInfo' + response.id + '">' + response.firstname + ' ' + response.secondname + '</a>';
+                let p2 = document.createElement('p');
+                p2.setAttribute('style', 'margin-bottom:0');
+                p2.innerHTML = '<a style="font-size:12px" href="/Messages/Dialog/?id=' + response.id + '&typeid=friendid">' + 'Перейти к диалогу с пользователем' + '</a>';
+                let p3 = document.createElement('p');
+                p3.setAttribute('style', 'margin-bottom:0');
+                p3.innerHTML = '<a style="font-size:12px" href="##"' + '">' + 'Удалить из друзей' + '</a>';
+                col.appendChild(p);
+                col.appendChild(p2);
+                col.appendChild(p3);
+                row.appendChild(col);
+                div.appendChild(row);
+            }
+        }
+    });
+    function addToFriends(element) {
+        let friendId = element.id;
+        idElem = element.id;
+        hubConnection.invoke("AddToFriend", friendId);
+    }
+    hubConnection.start();
+    let findButton = document.getElementById("FindByName");
+    findButton.addEventListener("input", function (event) {
+        var id = event.target.nextSibling.id;
+        var data = { pattern: event.target.value, id: id };
+        let request = new XMLHttpRequest();
+        function reqReadyStateChange() {
+            if (request.readyState == 4 && request.status == 200) {
+                response = JSON.parse(request.responseText);
+                let div = document.getElementById("friendslist").firstChild;
+                while (div.firstChild) {
+                    div.removeChild(div.firstChild);
+                }
+                for (let i = 0; i < response.length; i++) {
+                    let frienddiv = document.createElement('div');
+                    frienddiv.setAttribute('class', 'row');
+                    frienddiv.style = 'margin-bottom: 1rem; border-bottom: 1px solid #f1f1f4';
+                    let coldiv = document.createElement('div');
+                    coldiv.setAttribute('class', 'col-12');
+                    coldiv.style = 'margin-bottom:1rem';
+                    coldiv.innerHTML =
+                        '<p style="margin-bottom:0">' + response[i].фамилия + " " + response[i].имя + '</p>' +
+                        '<p style="margin-bottom:0">' + '<a  style="font-size:12px" href="">Перейти к диалогу с пользователем</a>' +
+                        '</p>' + '<p style="margin-bottom:0">' + '<a  style="font-size:12px" href="">Удалить из друзей</a>' + '</p>';
+                    frienddiv.appendChild(coldiv);
+                    div.appendChild(frienddiv);
+                }
+            }
+        }
+        body = "id=" + data.id + "&pattern=" + data.pattern;
+        request.open("POST", "Friends/FindByName");
+        request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        request.onreadystatechange = reqReadyStateChange;
+        request.send(body);
+    });
+</script>

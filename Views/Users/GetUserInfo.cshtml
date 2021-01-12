@@ -1,0 +1,253 @@
+﻿@using Microsoft.AspNetCore.Http;
+@model Vkontakte.Models.UserFriendBlogViewModel
+@{
+    ViewData["title"] = "UserInfo";
+    Guid IdUser = Guid.Parse(Context.User.Identity.Name);
+}
+<div id="maindiv" style="width:795px; height:auto">
+    @if (Model.пользователь.ID != IdUser) 
+    {
+        <div style="width: 230px; height:auto; float:left; background-color: #ffffff; border-radius: 4px">
+            <div class="col-12" style="padding-top:0.8rem">
+                <div class="row">
+                    <div id="photo" class="col-12">
+                        @if (Model.Аватарка != null)
+                        {
+                            <div style="background-image:url(data:image/jpeg;base64,@(Convert.ToBase64String(Model.Аватарка.Данные.Data)));
+                                            width:200px;
+                                            height:200px;
+                                            background-size:cover;
+                                            background-position: center center;">
+                            </div>
+                        }
+                        else
+                        {
+                            <img style="width: 200px; border-radius:2px" src="~/images/nofoto.jpg" />
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="row" style="background-color: #ffffff; border-radius: 4px; margin-right: 0.4rem;">
+                    <div style="width: 210px" class="col-12">
+                        <div class="row">
+                            <div class="col-12" style="margin-top: 0.4rem;">
+                                <a class="btn btn-primary" style="font-size:12px; width:200px" asp-action="Dialog" asp-controller="Messages" asp-route-id="@Model.пользователь.ID">Перейти к диалогу</a>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top:0.4rem; margin-bottom: 1rem">
+                            @if (Model.дружбы.FirstOrDefault(t => t.ID_Друга == IdUser) == null)
+                            {
+                                <div class="col-12">
+                                    <a style="font-size:12px; width:200px" asp-action="" asp-controller="" class="btn btn-primary">Добавить в друзья</a>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="col-12">
+                                    <a style="font-size:12px; width:200px" asp-action="" asp-controller="" class="btn btn-secondary">Удалить из друзей</a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="width:550px; height:auto; float:right; background-color:#ffffff; border-radius:4px">
+            <div class="col-12">
+                <div class="row" style="background-color: #ffffff; border-radius: 4px; margin-top: 1rem;">
+                    <div class="col-12">
+                        <div class="row" style="border-bottom: 1px solid #eeeff2">
+                            <div class="col-12">
+                                <h4 style="margin-top:0.4rem">@Model.пользователь.Имя @Model.пользователь.Фамилия</h4>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top:1rem; border-bottom: 1px solid #eeeff2">
+                            <div class="col-4">
+                                <p>Дата рождения:</p>
+                                <p>Страна:</p>
+                                <p>Город:</p>
+                            </div>
+                            <div class="col12">
+                                <p>@Model.пользователь.Дата_рождения.ToLongDateString()</p>
+                                <p>@Model.пользователь.Страна</p>
+                                <p>@Model.пользователь.Город</p>
+                            </div>
+                        </div>
+                        <div style="text-align:center" class="row">
+                            <div class="col-3">
+                                <a href="">
+                                    <p style="margin-bottom:0.2rem">@Model.дружбы.Count()</p>
+                                    <p style="font-size:12px; color:#82858c">Друзей</p>
+                                </a>
+                            </div>
+                            <div class="col-3">
+                                <a href="">
+                                    <p style="margin-bottom:0.2rem">@Model.CountFollowers</p>
+                                    <p style="font-size:12px; color:#82858c">Подписчиков</p>
+                                </a>
+                            </div>
+                            <div class="col-3">
+                                <a href="">
+                                    <p style="margin-bottom:0.2rem">@Model.CountBlogs</p>
+                                    <p style="font-size:12px; color:#82858c">Подписок</p>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div style="width: 230px; height:auto; float:left; background-color: #ffffff; border-radius: 4px">
+            <div class="col-12" style="padding-top:0.8rem">
+                <div class="row">
+                    <div id="photo" class="col-12">
+                        @if (Model.Аватарка != null)
+                        {
+                            <div style="background-image:url(data:image/jpeg;base64,@(Convert.ToBase64String(Model.Аватарка.Данные.Data))); 
+                                        width:200px;
+                                        height:200px;
+                                        background-size:cover;
+                                        background-position: center center;">
+                            </div>
+                        }
+                        else
+                        {
+                            <img style="width: 200px;" src="~/images/nofoto.jpg" />
+                        }
+                        <div id="editka" class="d-none" style="position:absolute; bottom:0; left:15px; width:200px; height:40px; background:#000000; opacity:0.5">
+                            <div class="col-12">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <a onclick="getEditForm(this)" style="cursor: pointer; text-decoration: none; font-size: 12px; color:aliceblue">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up" viewBox="0 0 16 16">
+                                                <path fill-rule="evenodd" d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5z" />
+                                            </svg>
+                                        Обновить фотографию</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12" style="padding-top:0.4rem; padding-bottom:0.4rem">
+                <div class="row">
+                    <div class="col-12 justify-content-center">
+                        <a asp-controller="Users" asp-action="EditInfo" asp-route-id="@Model.пользователь.ID" class="btn btn-light" style="font-size:12px">Редактировать</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="width:550px; height:auto; float:right; background-color:#ffffff; border-radius:4px">
+            <div class="col-12">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="row" style="border-bottom: 1px solid #eeeff2">
+                            <div class="col-12">
+                                <h4 style="margin-top:0.4rem">@Model.пользователь.Имя @Model.пользователь.Фамилия</h4>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top:1rem; border-bottom: 1px solid #eeeff2">
+                            <div class="col-4">
+                                <p>Дата рождения:</p>
+                                <p>Страна:</p>
+                                <p>Город:</p>
+                            </div>
+                            <div class="col-4">
+                                <p>@Model.пользователь.Дата_рождения.ToLongDateString()</p>
+                                <p>@Model.пользователь.Страна</p>
+                                <p>@Model.пользователь.Город</p>
+                            </div>
+                        </div>
+                        <div style="text-align:center" class="row">
+                            <div class="col-2">
+                                <a href="">
+                                    <p style="margin-bottom:0.2rem">@Model.дружбы.Count()</p>
+                                    <p style="font-size:12px; color:#82858c">Друзей</p>
+                                </a>
+                            </div>
+                            <div class="col-2">
+                                <a href="">
+                                    <p style="margin-bottom:0.2rem">@Model.CountFollowers</p>
+                                    <p style="font-size:12px; color:#82858c">Подписчиков</p>
+                                </a>
+                            </div>
+                            <div class="col-2">
+                                <a href="">
+                                    <p style="margin-bottom:0.2rem">@Model.CountBlogs</p>
+                                    <p style="font-size:12px; color:#82858c">Подписок</p>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+<script>
+    let photo = document.getElementById("photo");
+    function handler(event)
+    {
+        let editka = document.getElementById("editka");
+        if (event.type == 'mouseover')
+        {
+            editka.classList.toggle("d-none");
+        }
+        if (event.type == 'mouseout')
+        {
+            editka.classList.toggle("d-none");
+        }
+    }
+    photo.onmouseover = photo.onmouseout = handler;
+    function getEditForm(element) {
+        let request = new XMLHttpRequest();
+        function reqReadyStateChanche() {
+            if (request.readyState == 4 && request.status == 200) {
+                let response = request.responseText;
+                let div = document.getElementById('maindiv');
+                div.innerHTML = div.innerHTML + response;
+            }
+        }
+        request.open("POST", "/Users/EditAvatarForm");
+        request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        request.onreadystatechange = reqReadyStateChanche;
+        request.send();
+    }
+    function loadFile(element)
+    {
+        var files = element.files;
+        var formData = new FormData();
+        for (let i = 0; i != files.length; i++)
+        {
+            formData.append("files", files[i]);
+        }
+        for (let i = 0, f; f = files[i]; i++)
+        {
+            var fr = new FileReader();
+            fr.onload = (function (theFile) {
+                return function (e) {
+                    let img = document.createElement('img');
+                    img.setAttribute('src', e.target.result);
+                    img.setAttribute('style', 'margin-left:150px;max-width:320px;max-height: 350px');
+                    document.getElementById("photosplace").insertBefore(img, null);
+                };
+            })(f);
+            fr.readAsDataURL(f);
+        }
+        /*$.ajax({
+            url: "/Users/EditAvatar",
+            data: formData,
+            processData: false,
+            contentType: false,
+            type: "POST",
+            success: function (data) {
+                alert("Files Uploaded!");
+            }
+        });*/
+    }
+</script>

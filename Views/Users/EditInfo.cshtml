@@ -1,0 +1,42 @@
+﻿@model Vkontakte.Models.Пользователь
+@{
+    ViewData["title"] = "EditUserInfo";
+}
+<div class="row">
+    <div class="col-12" style="background-color: #ffffff; border-radius: 4px;">
+        <div class="row" style="margin-top:1rem">
+            <div class="col-12">
+                <h4>Редактирование информации о пользователе @Model.Имя @Model.Фамилия</h4>
+            </div>
+        </div>
+        <form method="post">
+            <input asp-for="@Model.ID" type="hidden" value="@Model.ID" />
+            <input asp-for="@Model.Никнейм" type="hidden" value="@Model.Никнейм" />
+            <input asp-for="@Model.Пароль" type="hidden" value="@Model.Пароль" />
+            <input asp-for="@Model._token" type="hidden" value="@Model._token" />
+            <div class="form-group">
+                <label for="FirstName">Имя</label>
+                <input id="FirstName" class="form-control" name="Имя" type="text" placeholder="@Model.Имя" value="@Model.Имя" />
+            </div>
+            <div class="form-group">
+                <label for="SecondName">Фамилия</label>
+                <input id="SecondName" class="form-control" name="Фамилия" type="text" placeholder="@Model.Фамилия" value="@Model.Фамилия" />
+            </div>
+            <div class="form-group">
+                <label for="City">Город</label>
+                <input id="City" class="form-control" type="text" name="Город" placeholder="@Model.Город" value="@Model.Город" />
+            </div>
+            <div class="form-group">
+                <label for="City">Страна</label>
+                <input id="City" class="form-control" type="text" name="Страна" placeholder="@Model.Страна" value="@Model.Страна" />
+            </div>
+            <div class="form-group">
+                <label for="Birthday">Дата рождения</label>
+                <input id="Birthday" class="form-control" name="Дата_рождения" type="date" value="@Model.Дата_рождения" />
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary">Редактиовать</button>
+            </div>
+        </form>
+    </div>
+</div>

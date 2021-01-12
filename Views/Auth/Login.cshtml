@@ -1,0 +1,66 @@
+﻿@model Vkontakte.Models.Пользователь
+@{
+    ViewData["Title"] = "Login";
+}
+<div class="row">
+    <div class="col-12" style="padding-bottom:1rem">
+        <h3>Добро пожаловать</h3>
+    </div>
+</div>
+<div class="row">
+    <div class="col-9">
+        <div class="row">
+            <div class="col-12">
+                <img style="border-radius:4px" src="~/images/vkontakte.jpg" />
+            </div>
+        </div>
+    </div>
+    <div class="col-3">
+        <div class="row" style="padding: 1rem; margin-bottom: 1rem; border: 1px solid #e7e8ec; border-radius: 4px; background-color: #ffffff">
+            @if (ViewBag.Error != null)
+            {
+                <span class="alert-danger" style="border-radius:1px; text-align:center; width: 90%; margin-bottom: 0.5rem">
+                    @ViewBag.Error
+                </span>
+            }
+            <form method="post" class="form-group">
+                <input class="form-control" type="text" name="username" placeholder="Логин" />
+                <input style="margin-top:0.5rem" class="form-control" type="password" name="password" placeholder="Пароль" />
+                <div class="row" style="margin-top: 0.6rem">
+                    <div class="col-6">
+                        <button type="submit" class="btn btn-primary">Войти</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="row" style="padding: 1rem;border: 1px solid #e7e8ec; border-radius: 4px; background-color: #ffffff">
+            <p>Впервые во вконтакте?</p>
+            <form method="post" accesskey="true" asp-action="Register" asp-controller="Auth">
+                <div class="validation" asp-validation-summary="ModelOnly"></div>
+                <input type="hidden" asp-for="Никнейм" value="89631966110" />
+                <input type="hidden" asp-for="Пароль" value="1" />
+                <div>
+                    <label asp-for="Фамилия"></label>
+                    <input asp-for="Фамилия" class="form-control" />
+                    <span asp-validation-for="Фамилия"></span>
+                </div>
+                <div>
+                    <label asp-for="Имя"></label>
+                    <input asp-for="Имя" class="form-control" />
+                    <span asp-validation-for="Имя"></span>
+                </div>
+                <div>
+                    <label asp-for="Дата_рождения"></label>
+                    <input type="date" asp-for="Дата_рождения" class="form-control" />
+                    <span asp-validation-for="Дата_рождения"></span>
+                </div>
+                <button type="submit" class="btn btn-success" style="margin-top: 1rem">Зарегистрироваться</button>
+            </form>
+        </div>
+    </div>
+</div>
+@section scripts{
+
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+}

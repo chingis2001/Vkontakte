@@ -1,0 +1,144 @@
+﻿@using Microsoft.AspNetCore.Http 
+@model List<Vkontakte.Models.ConversationsWithLastMessage>
+@{
+    ViewData["Title"] = "Conversations";
+    Guid IdUser = Guid.Parse(Context.User.Identity.Name);
+}
+<div class="row" id="out">
+    <div id="messageslist" class="col-12 messageslist" style="overflow-y: scroll; margin-bottom:0; background-color: #ffffff; border-radius: 4px; margin-bottom: 0; scrollbar-width: none;">
+        <div class="row" style="margin-top: 0.4rem; border-bottom: 2px solid #e7e8ec">
+            <div class="col-12">
+                <h5 style="padding-bottom:0.4rem">Сообщения</h5>
+            </div>
+        </div>
+        <div class="row">
+            <div id="MessagesList" class="col-12">
+                @if (Model.Count() == 0)
+                {
+                    <p id="nomessages">Вы пока не написали ни одного сообщения</p>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        <div id="@item.беседа.ID_Беседы" class="row d-block messagesBlock" style="border-bottom: 1px solid #e7e8ec">
+                            <div class="col-12">
+                                <div class="row">
+                                    <div class="col-9">
+                                        @if (item.Пользователь.Count() == 2)
+                                        {
+                                            <p style="margin-bottom:0.4rem">
+                                                <a asp-controller="Users" asp-action="GetUserInfo" asp-route-id="@item.Пользователь.FirstOrDefault(t=>t.ID != IdUser).ID">@item.Пользователь.FirstOrDefault(t => t.ID != IdUser).Фамилия @item.Пользователь.FirstOrDefault(t => t.ID != IdUser).Имя</a>
+                                            </p>
+                                        }
+                                        else
+                                        {
+                                            <p style="margin-bottom:0;">@item.беседа.Название_беседы</p>
+                                        }
+                                    </div>
+                                    <div class="col-3">
+                                        <p style="font-size: 12px;margin-top: 0.2rem; margin-bottom:0.4rem; color: #9aa1b1">@item.сообщение.Дата_отправки.ToLongDateString()</p>
+                                    </div>
+                                </div>
+                                <a style="text-decoration: none; color: #1f0000" asp-controller="Messages" asp-action="Dialog" asp-route-id="@item.беседа.ID_Беседы" class="stretched-link">
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <p style="font-size:12px">@item.Пользователь.FirstOrDefault(t => t.ID == item.сообщение.ID_Пользователя).Имя: @item.сообщение.Текст_сообщения</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12" id="reacthello">
+    </div>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function (event) {
+        let parent = document.getElementById("out");
+        let messageslist = document.getElementById("messageslist");
+        messageslist.style.paddingRight = messageslist.offsetWidth - messageslist.clientWidth + "px";
+        let headheight = document.getElementById("header").offsetHeight;
+        let newheight = document.documentElement.clientHeight - headheight - 40;
+        messageslist.style.height = newheight + "px";
+        window.onresize = function ()
+        {
+            newheight = document.documentElement.clientHeight - headheight - 40;
+            messageslist.style.height = newheight + "px";
+        }
+        const hubConnection = new signalR.HubConnectionBuilder().withUrl("/chat").build();
+        hubConnection.on("MessageSend", function (response) {
+            let div = document.getElementById("MessagesList");
+            if (document.getElementById('nomessages')) {
+                document.getElementById('nomessages').parentNode.removeChild(document.getElementById('nomessages'));
+            }
+            if (document.getElementById(response.conv_id)) {
+                while (document.getElementById(response.conv_id).firstChild)
+                {
+                    document.getElementById(response.conv_id).removeChild(document.getElementById(response.conv_id).firstChild);
+                }
+                document.getElementById(response.conv_id).parentNode.removeChild(document.getElementById(response.conv_id));
+                let mesdiv = document.createElement('div');
+                mesdiv.setAttribute('class', 'row d-block messagesBlock');
+                mesdiv.setAttribute('style', 'border-bottom: 1px solid #e7e8ec');
+                mesdiv.setAttribute('id', response.conv_id);
+                mesdiv.innerHTML =
+                    '<div class="col-12">' +
+                    '<div class="row">' +
+                    '<div class="col-9">' +
+                    '<p style="margin-bottom:0.4rem">' +
+                    '<a href="/Users/GetUserInfo/' + response.conv_user_id + '">' + response.conv_name + '</a>' +
+                    '</p>' +
+                    '</div>' +
+                    '<div class="col-3">' +
+                    '<p style="font-size: 12px;margin-top: 0.2rem; margin-bottom:0.4rem; color: #9aa1b1">' + response.date + '</p>' +
+                    '</div>' +
+                    '</div>' +
+                    '<a style="text-decoration: none; color: #1f0000" href="/Messages/Dialog/' + response.conv_id + '" class="stretched - link">' +
+                    '<div class="row">' +
+                    '<div class="col-12">' +
+                    '<p style="font-size: 12px; margin-top: 0.2rem; font-size:12px; color: #222247">' + response.firstname + ' ' + response.secondname + ': ' + response.text + '</p>' +
+                    '</div>' +
+                    '</div>' +
+                    '</a>' +
+                    '</div>';
+                div.insertBefore(mesdiv, div.firstChild);
+            }
+            else
+            {
+                let mesdiv = document.createElement('div');
+                mesdiv.setAttribute('class', 'row d-block messagesBlock');
+                mesdiv.setAttribute('style', 'border-bottom: 1px solid #e7e8ec');
+                mesdiv.setAttribute('id', response.conv_id);
+                mesdiv.innerHTML =
+                    '<div class="col-12">' +
+                    '<div class="row">' +
+                    '<div class="col-9">' +
+                    '<p style="margin-bottom:0.4rem">' +
+                    '<a href="/Users/GetUserInfo/' + response.conv_user_id + '">' + response.conv_name + '</a>' +
+                    '</p>' +
+                    '</div>' +
+                    '<div class="col-3">' +
+                    '<p style="font-size: 12px;margin-top: 0.2rem; margin-bottom:0.4rem; color: #9aa1b1">' + response.date + '</p>' +
+                    '</div>' +
+                    '</div>' +
+                    '<a style="text-decoration: none; color: #1f0000" href="/Messages/Dialog/' + response.conv_id + '" class="stretched - link">' +
+                    '<div class="row">' +
+                    '<div class="col-12">' +
+                    '<p style="font-size: 12px; margin-top: 0.2rem; font-size:12px; color: #222247">' + response.firstname + ' ' + response.secondname + ': ' + response.text + '</p>' +
+                    '</div>' +
+                    '</div>' +
+                    '</a>' +
+                    '</div>';
+                div.insertBefore(mesdiv, div.firstChild);
+            }
+        });
+        hubConnection.start();
+    });
+</script>
