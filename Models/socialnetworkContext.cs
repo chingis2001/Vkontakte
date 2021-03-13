@@ -47,6 +47,7 @@ namespace Vkontakte.Models
             modelBuilder.Entity<Данные>().Property(p => p.ID).HasColumnName("ID Данных");
             modelBuilder.Entity<Приложение>().Property(p => p.ID_Data).HasColumnName("ID Данных");
             modelBuilder.Entity<Приложение>().Property(p => p.ID_Записи).HasColumnName("ID Записи");
+            modelBuilder.Entity<Коментарий>().Property(p => p.Дата_коментария).HasColumnName("Дата коментария");
             modelBuilder.Entity<Аватарка>().Property(p => p.ID_Пользователя).HasColumnName("ID Пользователя");
             modelBuilder.Entity<Аватарка>().Property(p => p.ID_Data).HasColumnName("ID Картинки");
             modelBuilder.Entity<Аватарка>().Property(p => p.Дата_изменения).HasColumnName("Дата изменения");

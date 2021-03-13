@@ -59,86 +59,83 @@
     <div class="col-12" id="reacthello">
     </div>
 </div>
-<script>
-    document.addEventListener("DOMContentLoaded", function (event) {
-        let parent = document.getElementById("out");
-        let messageslist = document.getElementById("messageslist");
-        messageslist.style.paddingRight = messageslist.offsetWidth - messageslist.clientWidth + "px";
-        let headheight = document.getElementById("header").offsetHeight;
-        let newheight = document.documentElement.clientHeight - headheight - 40;
-        messageslist.style.height = newheight + "px";
-        window.onresize = function ()
-        {
-            newheight = document.documentElement.clientHeight - headheight - 40;
+@section Scripts{ 
+    <script>
+        document.addEventListener("DOMContentLoaded", function (event) {
+            let parent = document.getElementById("out");
+            let messageslist = document.getElementById("messageslist");
+            messageslist.style.paddingRight = messageslist.offsetWidth - messageslist.clientWidth + "px";
+            let headheight = document.getElementById("header").offsetHeight;
+            let newheight = document.documentElement.clientHeight - headheight - 40;
             messageslist.style.height = newheight + "px";
-        }
-        const hubConnection = new signalR.HubConnectionBuilder().withUrl("/chat").build();
-        hubConnection.on("MessageSend", function (response) {
-            let div = document.getElementById("MessagesList");
-            if (document.getElementById('nomessages')) {
-                document.getElementById('nomessages').parentNode.removeChild(document.getElementById('nomessages'));
+            window.onresize = function () {
+                newheight = document.documentElement.clientHeight - headheight - 40;
+                messageslist.style.height = newheight + "px";
             }
-            if (document.getElementById(response.conv_id)) {
-                while (document.getElementById(response.conv_id).firstChild)
-                {
-                    document.getElementById(response.conv_id).removeChild(document.getElementById(response.conv_id).firstChild);
+            hubConnection.on("MessageSend", function (response) {
+                let div = document.getElementById("MessagesList");
+                if (document.getElementById('nomessages')) {
+                    document.getElementById('nomessages').parentNode.removeChild(document.getElementById('nomessages'));
                 }
-                document.getElementById(response.conv_id).parentNode.removeChild(document.getElementById(response.conv_id));
-                let mesdiv = document.createElement('div');
-                mesdiv.setAttribute('class', 'row d-block messagesBlock');
-                mesdiv.setAttribute('style', 'border-bottom: 1px solid #e7e8ec');
-                mesdiv.setAttribute('id', response.conv_id);
-                mesdiv.innerHTML =
-                    '<div class="col-12">' +
-                    '<div class="row">' +
-                    '<div class="col-9">' +
-                    '<p style="margin-bottom:0.4rem">' +
-                    '<a href="/Users/GetUserInfo/' + response.conv_user_id + '">' + response.conv_name + '</a>' +
-                    '</p>' +
-                    '</div>' +
-                    '<div class="col-3">' +
-                    '<p style="font-size: 12px;margin-top: 0.2rem; margin-bottom:0.4rem; color: #9aa1b1">' + response.date + '</p>' +
-                    '</div>' +
-                    '</div>' +
-                    '<a style="text-decoration: none; color: #1f0000" href="/Messages/Dialog/' + response.conv_id + '" class="stretched - link">' +
-                    '<div class="row">' +
-                    '<div class="col-12">' +
-                    '<p style="font-size: 12px; margin-top: 0.2rem; font-size:12px; color: #222247">' + response.firstname + ' ' + response.secondname + ': ' + response.text + '</p>' +
-                    '</div>' +
-                    '</div>' +
-                    '</a>' +
-                    '</div>';
-                div.insertBefore(mesdiv, div.firstChild);
-            }
-            else
-            {
-                let mesdiv = document.createElement('div');
-                mesdiv.setAttribute('class', 'row d-block messagesBlock');
-                mesdiv.setAttribute('style', 'border-bottom: 1px solid #e7e8ec');
-                mesdiv.setAttribute('id', response.conv_id);
-                mesdiv.innerHTML =
-                    '<div class="col-12">' +
-                    '<div class="row">' +
-                    '<div class="col-9">' +
-                    '<p style="margin-bottom:0.4rem">' +
-                    '<a href="/Users/GetUserInfo/' + response.conv_user_id + '">' + response.conv_name + '</a>' +
-                    '</p>' +
-                    '</div>' +
-                    '<div class="col-3">' +
-                    '<p style="font-size: 12px;margin-top: 0.2rem; margin-bottom:0.4rem; color: #9aa1b1">' + response.date + '</p>' +
-                    '</div>' +
-                    '</div>' +
-                    '<a style="text-decoration: none; color: #1f0000" href="/Messages/Dialog/' + response.conv_id + '" class="stretched - link">' +
-                    '<div class="row">' +
-                    '<div class="col-12">' +
-                    '<p style="font-size: 12px; margin-top: 0.2rem; font-size:12px; color: #222247">' + response.firstname + ' ' + response.secondname + ': ' + response.text + '</p>' +
-                    '</div>' +
-                    '</div>' +
-                    '</a>' +
-                    '</div>';
-                div.insertBefore(mesdiv, div.firstChild);
-            }
+                if (document.getElementById(response.conv_id)) {
+                    while (document.getElementById(response.conv_id).firstChild) {
+                        document.getElementById(response.conv_id).removeChild(document.getElementById(response.conv_id).firstChild);
+                    }
+                    document.getElementById(response.conv_id).parentNode.removeChild(document.getElementById(response.conv_id));
+                    let mesdiv = document.createElement('div');
+                    mesdiv.setAttribute('class', 'row d-block messagesBlock');
+                    mesdiv.setAttribute('style', 'border-bottom: 1px solid #e7e8ec');
+                    mesdiv.setAttribute('id', response.conv_id);
+                    mesdiv.innerHTML =
+                        '<div class="col-12">' +
+                        '<div class="row">' +
+                        '<div class="col-9">' +
+                        '<p style="margin-bottom:0.4rem">' +
+                        '<a href="/Users/GetUserInfo/' + response.conv_user_id + '">' + response.conv_name + '</a>' +
+                        '</p>' +
+                        '</div>' +
+                        '<div class="col-3">' +
+                        '<p style="font-size: 12px;margin-top: 0.2rem; margin-bottom:0.4rem; color: #9aa1b1">' + response.date + '</p>' +
+                        '</div>' +
+                        '</div>' +
+                        '<a style="text-decoration: none; color: #1f0000" href="/Messages/Dialog/' + response.conv_id + '" class="stretched - link">' +
+                        '<div class="row">' +
+                        '<div class="col-12">' +
+                        '<p style="font-size: 12px; margin-top: 0.2rem; font-size:12px; color: #222247">' + response.firstname + ' ' + response.secondname + ': ' + response.text + '</p>' +
+                        '</div>' +
+                        '</div>' +
+                        '</a>' +
+                        '</div>';
+                    div.insertBefore(mesdiv, div.firstChild);
+                }
+                else {
+                    let mesdiv = document.createElement('div');
+                    mesdiv.setAttribute('class', 'row d-block messagesBlock');
+                    mesdiv.setAttribute('style', 'border-bottom: 1px solid #e7e8ec');
+                    mesdiv.setAttribute('id', response.conv_id);
+                    mesdiv.innerHTML =
+                        '<div class="col-12">' +
+                        '<div class="row">' +
+                        '<div class="col-9">' +
+                        '<p style="margin-bottom:0.4rem">' +
+                        '<a href="/Users/GetUserInfo/' + response.conv_user_id + '">' + response.conv_name + '</a>' +
+                        '</p>' +
+                        '</div>' +
+                        '<div class="col-3">' +
+                        '<p style="font-size: 12px;margin-top: 0.2rem; margin-bottom:0.4rem; color: #9aa1b1">' + response.date + '</p>' +
+                        '</div>' +
+                        '</div>' +
+                        '<a style="text-decoration: none; color: #1f0000" href="/Messages/Dialog/' + response.conv_id + '" class="stretched - link">' +
+                        '<div class="row">' +
+                        '<div class="col-12">' +
+                        '<p style="font-size: 12px; margin-top: 0.2rem; font-size:12px; color: #222247">' + response.firstname + ' ' + response.secondname + ': ' + response.text + '</p>' +
+                        '</div>' +
+                        '</div>' +
+                        '</a>' +
+                        '</div>';
+                    div.insertBefore(mesdiv, div.firstChild);
+                }
+            });
         });
-        hubConnection.start();
-    });
-</script>
+    </script>
+}

@@ -2,10 +2,18 @@
 @model List<Vkontakte.Models.PostBlogCommentActionViewModel>
 @{
     ViewData["Title"] = "Blog";
-    Guid IdUser = Guid.Parse(Context.User.Identity.Name);
+    Guid IdUser;
+    if (Context.User.Identity.Name != null)
+    {
+        IdUser = Guid.Parse(Context.User.Identity.Name);
+    }
+    else
+    {
+        IdUser = Guid.Empty;
+    }
 }
 <input type="hidden" id="BlogId" value="@Model.FirstOrDefault().Блог.ID_Блога" />
-<div style="width:665px">
+<div style="width:550px">
     <div class="col-12">
         <div class="row">
             <div class="col-12" style="background-color: #ffffff; border-radius: 4px; margin-bottom: 1rem">
@@ -26,51 +34,54 @@
         </div>
     </div>
 </div>
-@if (Model.FirstOrDefault().Блог.ID_Создателя == IdUser)
+@if (IdUser != Guid.Empty)
 {
-    <div style="width:665px">
-        <div class="col-12">
-            <div class="row">
-                <div class="col-12" style="background-color: #ffffff; border-radius: 4px; margin-bottom: 1rem">
-                    <div class="row">
-                        <div class="col-12">
-                            <h5>Что у вас нового?</h5>
+    @if (Model.FirstOrDefault().Блог.ID_Создателя == IdUser)
+    {
+        <div style="width:550px">
+            <div class="col-12">
+                <div class="row">
+                    <div class="col-12" style="background-color: #ffffff; border-radius: 4px; margin-bottom: 1rem">
+                        <div class="row">
+                            <div class="col-12">
+                                <h5>Что у вас нового?</h5>
+                            </div>
                         </div>
-                    </div>
-                    <div class="row" style="margin-bottom:0.4rem">
-                        <div class="col-12">
-                            <input type="hidden" id="BlogId" value="@Model.FirstOrDefault().Блог.ID_Блога" />
-                            <textarea id="message" placeholder="Введите сюда текст" class="form-control" style="font-size:12px; border: none"></textarea>
+                        <div class="row" style="margin-bottom:0.4rem">
+                            <div class="col-12">
+                                <input type="hidden" id="BlogId" value="@Model.FirstOrDefault().Блог.ID_Блога" />
+                                <textarea id="message" placeholder="Введите сюда текст" class="form-control" style="font-size:12px; border: none"></textarea>
+                            </div>
                         </div>
-                    </div>
-                    <div class="row" style="margin-bottom:0.4rem">
-                        <div id="photoplace" class="col-12">
+                        <div class="row" style="margin-bottom:0.4rem">
+                            <div id="photoplace" class="col-12">
 
+                            </div>
                         </div>
-                    </div>
-                    <div class="row" style="margin-bottom:0.4rem">
-                        <div class="col-4"></div>
-                        <div class="col-4">
-                            <label for="Attachments" class="btn btn-primary" style="font-size:12px; cursor:pointer">Загрузить приложения</label>
-                            <input onchange="fileUpload(this)" class="d-none" type="file" id="Attachments" name="Attachments" />
-                        </div>
-                        <div class="col-4">
-                            <button id="SendBtn" style="font-size:12px" class="btn btn-primary">Опубликовать</button>
+                        <div class="row" style="margin-bottom:0.4rem">
+                            <div class="col-3"></div>
+                            <div class="col-5">
+                                <label for="Attachments" class="btn btn-primary" style="font-size:12px; cursor:pointer">Загрузить приложения</label>
+                                <input onchange="fileUpload(this)" class="d-none" type="file" id="Attachments" name="Attachments" />
+                            </div>
+                            <div class="col-4">
+                                <button id="SendBtn" style="font-size:12px" class="btn btn-primary">Опубликовать</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    }
 }
-<div style="width:665px">
+<div style="width:550px">
     <div class="col-12">
         <div class="row" id="posts">
             @foreach (var item in Model)
             {
                 @if (item.Запись != null)
                 {
-                    <div class="col-12" style="background-color: #ffffff; border-radius: 4px; margin-bottom: 1rem">
+                    <div class="col-12" style="background-color: #ffffff; border-radius: 4px; margin-bottom: 1rem" onmouseover="postOnMouseOver(this)">
                         <div class="row">
                             <div class="col-12">
                                 <h6 style="margin:0.4rem 1rem 0.4rem 1rem; font-size:12px; color:#4d5885">@item.Блог.Название</h6>
@@ -78,9 +89,22 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-12">
-                                <p style="margin:0.4rem 1rem 0.4rem 1rem; font-size:12px">@item.Запись.Текст</p>
-                            </div>
+                            @if (item.Запись.Текст.Length > 512)
+                            {
+                                <div class="col-12" style="margin:0.4rem 1rem 0.4rem 0rem; font-size:12px">
+                                    @Html.Raw(item.Запись.Текст.Substring(0, 512) + "</p>")
+                                    <a style="cursor: pointer; color: #5f7c9f; text-decoration: underline" onclick="ExpandText(this)">Показать польностью...</a>
+                                </div>
+                                <div class="col-12 d-none" style="margin:0.4rem 1rem 0.4rem 0rem; font-size:12px">
+                                    @Html.Raw(item.Запись.Текст)
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="col-12" style="margin:0.4rem 1rem 0.4rem 0rem; font-size:12px">
+                                    @Html.Raw(item.Запись.Текст)
+                                </div>
+                            }
                         </div>
                         <div class="row">
                             <div style="padding-left:30px" class="col-12">
@@ -97,11 +121,11 @@
                                     {
                                         @if (i == 0)
                                         {
-                                            <img style="max-height:350px; max-width:280px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(item.Данные.ElementAt(i).Data))" />
+                                            <img style="max-height:510px; max-width:242.15px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(item.Данные.ElementAt(i).Data))" />
                                         }
                                         else
                                         {
-                                            <img style="max-height:175px; max-width:280px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(item.Данные.ElementAt(i).Data))" />
+                                            <img style="max-height:255px; max-width:242.15px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(item.Данные.ElementAt(i).Data))" />
                                         }
                                     }
                                 }
@@ -109,14 +133,14 @@
                                 {
                                     @foreach (var data in item.Данные)
                                     {
-                                        <img style="max-height:350px; max-width:280px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(data.Data))" />
+                                        <img style="max-height:510px; max-width:242.15px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(data.Data))" />
                                     }
                                 }
                                 @if (item.Данные.Count() == 1)
                                 {
                                     @foreach (var data in item.Данные)
                                     {
-                                        <img style="max-height:350px; max-width:600px; float:left;" src="data:image/jpeg;base64,@(Convert.ToBase64String(data.Data))" />
+                                        <img style="max-height:510px; max-width:490px; float:left;" src="data:image/jpeg;base64,@(Convert.ToBase64String(data.Data))" />
                                     }
                                 }
                             </div>
@@ -145,10 +169,9 @@
                             </div>
                             <div class="col-1" style="padding: 0">
                                 <p id="@item.Запись.ID_Записи" style="font-size:12px; margin-left: 1rem">
-                                    <svg onclick="getPostComents(this)" style="cursor: pointer" width="1em" height="1em" viewBox="0 0 16 16" class="comentbtn bi bi-chat-square" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                    <svg onclick="getPostComents(this)" style="margin-left:0.2rem; cursor: pointer" width="1em" height="1em" viewBox="0 0 16 16" class="comentbtn bi bi-chat-square" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                                         <path fill-rule="evenodd" d="M14 1H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2.5a2 2 0 0 1 1.6.8L8 14.333 9.9 11.8a2 2 0 0 1 1.6-.8H14a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 0a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2.5a1 1 0 0 1 .8.4l1.9 2.533a1 1 0 0 0 1.6 0l1.9-2.533a1 1 0 0 1 .8-.4H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z" />
-                                    </svg>
-                                    @item.Коментарии.Count()
+                                    </svg>@item.Коментарии.Count()
                                 </p>
                             </div>
                             <div class="col-8"></div>
@@ -178,86 +201,90 @@
         </div>
     </div>
 </div>
-@section Additional
+@if (IdUser != Guid.Empty)
 {
-    <div class="row" style="margin-left:0.4rem">
-        <div class="col-12" style="background-color: #ffffff; border-radius: 4px;">
-            <div class="row" style="margin-top:0.4rem">
-                <div class="col-12">
-                    <p style="font-size:12px; margin-bottom:0.4rem">
-                        @Model.FirstOrDefault().Блог.Название
-                    </p>
-                </div>
-            </div>
-            <div class="row" style="margin-top:0.4rem">
-                <div class="col-12">
-                    <p style="font-size:12px; margin-bottom:0">
-                        @Model.FirstOrDefault().Блог.Подписчики.Count() подписчиков
-                    </p>
-                </div>
-             </div>
-            <div class="row" style="margin-top:0.4rem; margin-bottom: 1rem">
-                <div class="col-12">
-                    @if (Model.FirstOrDefault().Блог.Подписчики.FirstOrDefault(t => t.ID_Пользователя == IdUser) != null)
-                    {
-                        <a asp-controller="" asp-action="" class="btn btn-primary" style="font-size:12px">Отписаться</a>
-                    }
-                    else
-                    {
-                        <a asp-controller="" asp-action="" class="btn btn-primary" style="font-size:12px">Подписаться</a>
-                    }
+    @section Additional
+    {
+        <div class="col-3">
+            <div class="row" style="margin-left:0.4rem">
+                <div class="col-12" style="background-color: #ffffff; border-radius: 4px;">
+                    <div class="row" style="margin-top:0.4rem">
+                        <div class="col-12">
+                            <p style="font-size:12px; margin-bottom:0.4rem">
+                                @Model.FirstOrDefault().Блог.Название
+                            </p>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:0.4rem">
+                        <div class="col-12">
+                            <p style="font-size:12px; margin-bottom:0">
+                                @Model.FirstOrDefault().Блог.Подписчики.Count() подписчиков
+                            </p>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:0.4rem; margin-bottom: 1rem">
+                        <div class="col-12">
+                            @if (Model.FirstOrDefault().Блог.Подписчики.FirstOrDefault(t => t.ID_Пользователя == IdUser) != null)
+                            {
+                                <a asp-controller="" asp-action="" class="btn btn-primary" style="font-size:12px">Отписаться</a>
+                            }
+                            else
+                            {
+                                <a asp-controller="" asp-action="" class="btn btn-primary" style="font-size:12px">Подписаться</a>
+                            }
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-}
-<script>
-    let page = 1;
-    onscroll = function () {
-        if (window.scrollY + 1 >= document.documentElement.scrollHeight - document.documentElement.clientHeight) {
-            let id = document.getElementById('BlogId').value;
-            let data = { page: page, id: id };
-            let request = new XMLHttpRequest();
-            function reqReadyStateChange() {
-                if (request.readyState == 4 && request.status == 200) {
-                    page = page + 1;
-                    response = request.responseText;
-                    let div = document.getElementById('posts');
-                    div.innerHTML = div.innerHTML + response;
-                }
-            }
-            body = "id=" + data.id + "&page=" + data.page;
-            request.open("POST", "/Blogs/BlogPosts");
-            request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-            request.onreadystatechange = reqReadyStateChange;
-            request.send(body);
-        }
-    };
-    var data = [];
-    function fileUpload(element) {
-        var files = element.files;
-        var reader = new FileReader();
-        for (let i = 0; i != files.length; i++) {
-            reader.readAsDataURL(files[i]);
-            data.push(reader);
-        }
-        for (let i = 0, f; f = files[i]; i++) {
-            var fr = new FileReader();
-            fr.onload = (function (theFile) {
-                return function (e) {
-                    let img = document.createElement('div');
-                    img.setAttribute('style', 'background-image:url(' + e.target.result + ');float:left; width:200px;height:200px;background-position:center center;background-size:cover');
-                    document.getElementById("photoplace").insertBefore(img, null);
-                };
-            })(f);
-            fr.readAsDataURL(f);
-        }
     }
-    document.addEventListener("DOMContentLoaded", function (event) {
-        const hubConnection = new signalR.HubConnectionBuilder().withUrl("/chat").build();        
+}
+@section Scripts
+{
+    <script>
+        let page = 1;
+        onscroll = function () {
+            if (window.scrollY + 1 >= document.documentElement.scrollHeight - document.documentElement.clientHeight) {
+                let id = document.getElementById('BlogId').value;
+                let data = { page: page, id: id };
+                let request = new XMLHttpRequest();
+                function reqReadyStateChange() {
+                    if (request.readyState == 4 && request.status == 200) {
+                        page = page + 1;
+                        response = request.responseText;
+                        let div = document.getElementById('posts');
+                        div.innerHTML = div.innerHTML + response;
+                    }
+                }
+                body = "id=" + data.id + "&page=" + data.page;
+                request.open("POST", "/Blogs/BlogPosts");
+                request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                request.onreadystatechange = reqReadyStateChange;
+                request.send(body);
+            }
+        };
+        var data = [];
+        function fileUpload(element) {
+            var files = element.files;
+            var reader = new FileReader();
+            for (let i = 0; i != files.length; i++) {
+                reader.readAsDataURL(files[i]);
+                data.push(reader);
+            }
+            for (let i = 0, f; f = files[i]; i++) {
+                var fr = new FileReader();
+                fr.onload = (function (theFile) {
+                    return function (e) {
+                        let img = document.createElement('div');
+                        img.setAttribute('style', 'background-image:url(' + e.target.result + ');float:left; width:200px;height:200px;background-position:center center;background-size:cover');
+                        document.getElementById("photoplace").insertBefore(img, null);
+                    };
+                })(f);
+                fr.readAsDataURL(f);
+            }
+        }
         hubConnection.on("Publicated", function (response) {
-            if (document.getElementById("BlogId").value == response.id_блога)
-            {
+            if (document.getElementById("BlogId").value == response.id_блога) {
                 let postcol = document.createElement('div');
                 postcol.setAttribute('class', 'col-12');
                 postcol.setAttribute('style', 'background-color: #ffffff; border-radius: 4px; margin-bottom: 1rem');
@@ -286,6 +313,34 @@
                 text.setAttribute('style', 'margin:0.4rem 1rem 0.4rem 1rem; font-size:12px');
                 text.innerHTML = response.текст;
                 textcol.appendChild(text);
+                let secondplusrow = document.createElement('div');
+                secondplusrow.setAttribute('class', 'row');
+                secondplusrow.innerHTML = '<div style="padding-left:30px" class="col-12"></div>';
+                if (response.приложения.length == 1) {
+                    for (let i = 0; i < response.приложения.length; i++) {
+                        secondplusrow.firstChild.innerHTML += '<img style="max-height:510px; max-width:490px; float:left;" src="data:image/jpeg;base64,' + response.приложения[i] + '" />';
+                    }
+                }
+                if (response.приложения.length == 2) {
+                    for (let i = 0; i < response.приложения.length; i++) {
+                        secondplusrow.firstChild.innerHTML += '<img style="max-height:510px; max-width:242.15px; float:left; margin-right:10px" src="data:image/jpeg;base64,' + response.приложения[i] + '" />';
+                    }
+                }
+                if (response.приложения.length == 3) {
+                    for (let i = 0; i < response.приложения.length; i++) {
+                        if (i == 0) {
+                            secondplusrow.firstChild.innerHTML += '< img style = "max-height:510px; max-width:242.15px; float:left; margin-right:10px" src = "data:image/jpeg;base64,' + response.приложения[i] + '" />';
+                        }
+                        else {
+                            secondplusrow.firstChild.innerHTML += '< img style = "max-height:255px; max-width:242.15px; float:left; margin-right:10px" src = "data:image/jpeg;base64,' + response.приложения[i] + '" />';
+                        }
+                    }
+                }
+                if (response.приложения.length > 3) {
+                    for (let i = 0; i < response.приложения.length; i++) {
+                        secondplusrow.firstChild.innerHTML += '<img style="max-height:200px; max-width:200px; float:left; margin-right:10px" src="data:image/jpeg;base64,' + response.приложения[i] + '" />';
+                    }
+                }
                 thirdrow.innerHTML = '<div class="col-1"></div><div class="col-10" style="margin-top:1rem;margin-bottom:1rem; border-bottom: 1px solid #adb2bc"><div class="col-1"></div></div>';
                 firstrow.appendChild(blogcol);
                 secondrow.appendChild(textcol);
@@ -323,6 +378,7 @@
                 fourthrow.appendChild(viewcol);
                 postcol.appendChild(firstrow);
                 postcol.appendChild(secondrow);
+                postcol.appendChild(secondplusrow);
                 postcol.appendChild(thirdrow);
                 postcol.appendChild(fourthrow);
                 let firstElem = document.getElementById("posts").firstChild;
@@ -332,69 +388,119 @@
                 }
             }
         });
-        if (document.getElementById("SendBtn"))
-        {
+        hubConnection.on("CommentAdded", function (response) {
+            if (document.getElementById("PostContent")) {
+                if (document.getElementById(response.id_post)) {
+                    let comments_block = document.getElementById("comments_block");
+                    let comment_div = document.createElement('div');
+                    comment_div.setAttribute('style', "border-bottom: 1px solid #adb2bc; margin-left:1rem; margin-right:1rem;margin-bottom:0.4rem");
+                    comment_div.setAttribute('class', 'row');
+                    let comment_col12 = document.createElement('div');
+                    comment_col12.setAttribute('class', 'col-12');
+                    let comment_text = document.createElement('p');
+                    comment_text.setAttribute('style', "font-size: 12px; color: #4d5885; padding:0; margin:0; margin-top: 0.4rem;");
+                    comment_text.innerHTML = response.user_name + " " + response.user_second_name;
+                    let comment_user_info = document.createElement('p');
+                    comment_user_info.setAttribute('style', "font-size: 12px");
+                    comment_user_info.innerHTML = response.text;
+                    comment_col12.appendChild(comment_text);
+                    comment_col12.appendChild(comment_user_info);
+                    comment_div.appendChild(comment_col12);
+                    comments_block.insertBefore(comment_div, comments_block.firstChild);
+                    if (response.scroll_y) {
+                        document.documentElement.scrollTo(scroll_y);
+                    }
+                }
+            }
+            let comments_count_p = document.getElementById(response.id_post).parentNode.parentNode.nextElementSibling.firstElementChild;
+            if (comments_count_p) {
+                let text = comments_count_p.firstElementChild.nextSibling;
+                let count_comments = parseInt(text.data);
+                count_comments++;
+                text.data = count_comments;
+            }
+        });
+        if (document.getElementById("SendBtn")) {
             document.getElementById("SendBtn").addEventListener("click", function (event) {
                 let text = document.getElementById("message").value;
                 let id = document.getElementById("BlogId").value;
                 let files = [];
-                for (let i = 0; i < data.length; i++)
-                {
+                for (let i = 0; i < data.length; i++) {
                     files.push(data[i].result);
+                }
+                document.getElementById('message').value = "";
+                data = [];
+                while (document.getElementById("photoplace").firstChild) {
+                    document.getElementById("photoplace").removeChild(document.getElementById("photoplace").firstChild);
                 }
                 hubConnection.invoke("Create", text, id, files);
             });
         }
-        hubConnection.start();
-    });
-    function addLike(element) {
-        var data = { id: element.id };
-        var request = new XMLHttpRequest();
-        function reqReadyStateChanche() {
-            if (request.readyState == 4 && request.status == 200) {
-                let reqstrings = request.responseText.split(";");
-                let pelem = element.parentNode;
-                while (pelem.firstChild)
-                    pelem.removeChild(pelem.firstChild);
-                if (reqstrings[0] == "add") {
-                    pelem.innerHTML = '<svg onclick="addLike(this)" style="cursor:pointer" id="' + data.id + '" width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-heart likesbtn" fill="#ff0000" xmlns="http://www.w3.org/2000/svg">' +
-                        '<path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/>' +
-                        '</svg> ' + reqstrings[1];
-                }
-                else {
-                    pelem.innerHTML = '<svg onclick="addLike(this)" style="cursor:pointer" id="' + data.id + '" width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-heart likesbtn" fill="#000000" xmlns="http://www.w3.org/2000/svg">' +
-                        '<path fill-rule="evenodd" d="M8 2.748l-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143c.06.055.119.112.176.171a3.12 3.12 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15z" />' +
-                        '</svg> ' + reqstrings[1];
+        function addComent(element) {
+            let text = element.parentNode.previousSibling.firstChild.value;
+            let id = element.id;
+            hubConnection.invoke("AddComment", id, text);
+        }
+        function addLike(element) {
+            var data = { id: element.id };
+            var request = new XMLHttpRequest();
+            function reqReadyStateChanche() {
+                if (request.readyState == 4 && request.status == 200) {
+                    let reqstrings = request.responseText.split(";");
+                    let pelem = element.parentNode;
+                    while (pelem.firstChild)
+                        pelem.removeChild(pelem.firstChild);
+                    if (reqstrings[0] == "add") {
+                        pelem.innerHTML = '<svg onclick="addLike(this)" style="cursor:pointer" id="' + data.id + '" width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-heart likesbtn" fill="#ff0000" xmlns="http://www.w3.org/2000/svg">' +
+                            '<path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/>' +
+                            '</svg> ' + reqstrings[1];
+                    }
+                    else {
+                        pelem.innerHTML = '<svg onclick="addLike(this)" style="cursor:pointer" id="' + data.id + '" width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-heart likesbtn" fill="#000000" xmlns="http://www.w3.org/2000/svg">' +
+                            '<path fill-rule="evenodd" d="M8 2.748l-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143c.06.055.119.112.176.171a3.12 3.12 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15z" />' +
+                            '</svg> ' + reqstrings[1];
+                    }
                 }
             }
+            var body = "id=" + data.id;
+            request.open("POST", "/Home/LikeAdd");
+            request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            request.onreadystatechange = reqReadyStateChanche;
+            request.send(body);
         }
-        var body = "id=" + data.id;
-        request.open("POST", "/Home/LikeAdd");
-        request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        request.onreadystatechange = reqReadyStateChanche;
-        request.send(body);
-    }
-    function getPostComents(element) {
-        let data = { id: element.parentNode.id };
-        let request = new XMLHttpRequest();
-        function reqReadyStateChanche() {
-            if (request.readyState == 4 && request.status == 200) {
-                let response = request.responseText;
-                let div = document.getElementById('posts');
-                div.innerHTML = div.innerHTML + response;
+        function getPostComents(element) {
+            let data = { id: element.parentNode.id };
+            let request = new XMLHttpRequest();
+            function reqReadyStateChanche() {
+                if (request.readyState == 4 && request.status == 200) {
+                    let response = request.responseText;
+                    let div = document.getElementById('posts');
+                    div.innerHTML = div.innerHTML + response;
+                    let Commentsdiv = document.getElementById('contentRow');
+                    Commentsdiv.style.maxHeight = document.documentElement.clientHeight + "px";
+                    document.body.style.overflowY = "hidden";
+                }
             }
+            let body = "id=" + data.id;
+            request.open("POST", "/Home/GetPostComents");
+            request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            request.onreadystatechange = reqReadyStateChanche;
+            request.send(body);
         }
-        let body = "id=" + data.id;
-        request.open("POST", "/Home/GetPostComents");
-        request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        request.onreadystatechange = reqReadyStateChanche;
-        request.send(body);
-    }
-    function closeDetail(element) {
-        let postBanner = document.getElementById('PostBanner');
-        let postContent = document.getElementById('PostContent');
-        postBanner.parentElement.removeChild(postBanner);
-        postContent.parentElement.removeChild(postContent);
-    }
-    /* base64.js,v 2.15 */
-</script>
+        function closeDetail(element) {
+            let postBanner = document.getElementById('PostBanner');
+            let postContent = document.getElementById('PostContent');
+            postBanner.parentElement.removeChild(postBanner);
+            postContent.parentElement.removeChild(postContent);
+            document.body.style.overflowY = "scroll";
+        }
+        document.addEventListener("DOMContentLoaded", function (event) {
+            if (document.getElementById("message")) {
+                $("#message").summernote({
+                    toolbar: [
+                    ]
+                });
+            }
+        });
+    </script>
+}

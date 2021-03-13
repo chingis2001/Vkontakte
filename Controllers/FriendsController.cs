@@ -39,12 +39,22 @@ namespace Vkontakte.Controllers
                 друзья = _context.Дружба.FromSqlRaw("EXEC GetFriends @FriendID", param).ToList();
                 друзья = друзья.Where(t => t.Код_статуса == 2).ToList();
             }
-            List<Пользователь> пользователи_друзья = new List<Пользователь>();
-            foreach (var друг in друзья)
-                пользователи_друзья.Add(_context.Пользователь.FirstOrDefault(t => t.ID == друг.ID_Друга));
-            return View(пользователи_друзья);
+            List<UserFriendBlogViewModel> users = new List<UserFriendBlogViewModel>();
+            foreach (var друг in друзья) 
+            {
+                Аватарка аватарка = _context.Аватарка.Include(t => t.Данные).FirstOrDefault(t => t.ID_Пользователя == друг.ID_Друга);
+                users.Add(new UserFriendBlogViewModel()
+                {
+                    Аватарка = аватарка,
+                    CountBlogs = 0,
+                    CountFollowers = 0,
+                    дружбы = null,
+                    пользователь = _context.Пользователь.FirstOrDefault(t => t.ID == друг.ID_Друга),
+                });
+            }                
+            return View(users);
         }
-        public JsonResult FindByName(string? id, string? pattern) 
+        public IActionResult FindByName(string? id, string? pattern) 
         {
             IEnumerable<Дружба> друзья;
             if (id == null)
@@ -60,19 +70,23 @@ namespace Vkontakte.Controllers
                 Microsoft.Data.SqlClient.SqlParameter param = new Microsoft.Data.SqlClient.SqlParameter("@FriendID", Guid.Parse(id));
                 друзья = _context.Дружба.FromSqlRaw("EXEC GetFriends @FriendID", param).ToList().Where(t => t.Код_статуса == 2).ToList();
             }
-            List<Пользователь> пользователи_друзья = new List<Пользователь>();
+            List<UserFriendBlogViewModel> users = new List<UserFriendBlogViewModel>();
             foreach (var друг in друзья)
-                пользователи_друзья.Add(_context.Пользователь.FirstOrDefault(t => t.ID == друг.ID_Друга && EF.Functions.Like(t.Фамилия, pattern + "%")));
-            пользователи_друзья = пользователи_друзья.Where(t => t != null).ToList();
-            for (int i = 0; i < пользователи_друзья.Count(); i++) 
             {
-                пользователи_друзья[i].ИменияДружб = null;
-                пользователи_друзья[i]._token = null;
-                пользователи_друзья[i].Пароль = null;
-                пользователи_друзья[i].Никнейм = null;
-            }                
-            var json = Json(пользователи_друзья);
-            return json;
+                Пользователь пользователь = _context.Пользователь.FirstOrDefault(t => t.ID == друг.ID_Друга && EF.Functions.Like(t.Фамилия, pattern + "%"));
+                if (пользователь != null) 
+                {
+                    users.Add(new UserFriendBlogViewModel()
+                    {
+                        пользователь = пользователь,
+                        Аватарка = _context.Аватарка.Include(t => t.Данные).FirstOrDefault(t => t.ID_Пользователя == пользователь.ID),
+                        CountBlogs = 0,
+                        CountFollowers = 0,
+                        дружбы = null
+                    });
+                }
+            }
+            return PartialView("_Friends", users);
         }
         public IActionResult Requests(string? type) 
         {
@@ -94,7 +108,19 @@ namespace Vkontakte.Controllers
                       join друг in друзья.ToList() on другинфо.ID_Друга equals друг.ID_Друга
                       where друг.Дата_изиенения_статуса == другинфо.Дата_изиенения_статуса && друг.ID_Пользователя == другинфо.ID_Пользователя
                       select другинфо).ToList();
-            return View(друзья);
+            List<UserFriendBlogViewModel> users = new List<UserFriendBlogViewModel>();
+            foreach (var friend in друзья) 
+            {
+                users.Add(new UserFriendBlogViewModel()
+                {
+                    пользователь = _context.Пользователь.FirstOrDefault(t => t.ID == friend.ID_Друга),
+                    Аватарка = _context.Аватарка.Include(t=>t.Данные).FirstOrDefault(t => t.ID_Пользователя == friend.ID_Друга),
+                    CountBlogs = 0,
+                    дружбы = null,
+                    CountFollowers = 0,
+                });
+            }
+            return View(users);
         }
         public IActionResult AddToFriends() 
         {

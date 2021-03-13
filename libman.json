@@ -16,6 +16,10 @@
       "files": [
         "dist/browser/signalr.min.js"
       ]
+    },
+    {
+      "library": "summernote@0.8.6",
+      "destination": "wwwroot/js/summernote/"
     }
   ]
 }

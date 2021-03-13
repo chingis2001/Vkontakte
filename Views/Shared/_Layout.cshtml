@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Vkontakte</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="~/js/summernote/summernote.css" rel="stylesheet">
     <link rel="stylesheet" href="~/css/site.min.css" />
 </head>
 <body>
@@ -33,13 +34,13 @@
             </div>
         </nav>
     </header>
-    <div class="container">
-        <div role="main" class="pb-3" style="padding-bottom: 0 !important; margin-bottom: 0;">
+    <div class="container" style="width: 990px">
+        <div role="main" class="pb-3" style="width: inherit; padding-bottom: 0 !important; margin-bottom: 0;">
             @if (Context.User.Identity.Name != null)
             {
-                <div class="row">
+                <div class="row" style="width: inherit">
                     <div class="col-2">
-                        <ul class="nav nav-pills flex-column position-fixed">
+                        <ul class="nav nav-pills flex-column position-fixed" style="font-size:14px">
                             <li class="nav-item">
                                 <a class="navigation nav-link" asp-controller="Users" asp-action="GetUserInfo" asp-route-id="@Context.User.Identity.Name">
                                     <svg style="margin-bottom:0.2rem" width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-house-door-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -87,20 +88,45 @@
                     <div class="col-7">
                         @RenderBody()
                     </div>
-                    <div class="col-3">
-                        @RenderSection("Additional", false)
-                    </div>
+                    @RenderSection("Additional", required: false)
                 </div>
             }
             else
             {
-                @RenderBody()
+                if (Context.Request.Path == "/Auth/Login")
+                {
+                    @RenderBody()
+                }
+                else
+                {
+                    <div class="row" style="width: inherit">
+                        <div class="col-2">
+                            <div class="row">
+                                <div class="col-12" style="background-color: #ffffff; border-radius: 4px; position: sticky; top: 70px">
+                                    <form method="post" asp-action="Login" asp-controller="Auth" class="form-group">
+                                        <label for="telephone" style="font-size:12px">Телефон</label>
+                                        <input id="telephone" class="form-control" name="username" type="text" style="font-size:12px" />
+                                        <label for="telephone" style="font-size:12px">Пароль</label>
+                                        <input id="telephone" class="form-control" name="password" type="password" style="font-size:12px" />
+                                        <button type="submit" class="btn btn-primary w-100" style="margin-top: 0.4rem; font-size:12px">Войти</button>
+                                        <a asp-action="Login" asp-controller="Auth" class="btn btn-primary w-100" style="margin-top: 0.4rem; font-size: 12px">Регистрация</a>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-7">
+                            @RenderBody()
+                        </div>
+                        @RenderSection("Additional", required: false)
+                    </div>
+                }
             }
         </div>
     </div>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/summernote/summernote.js"></script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

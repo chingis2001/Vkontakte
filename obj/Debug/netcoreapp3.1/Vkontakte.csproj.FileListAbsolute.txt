@@ -205,3 +205,6 @@ D:\w\4\Vkontakte\obj\Debug\netcoreapp3.1\Vkontakte.csproj.CoreCompileInputs.cach
 D:\w\4\Vkontakte\obj\Debug\netcoreapp3.1\Vkontakte.MvcApplicationPartsAssemblyInfo.cs
 D:\w\4\Vkontakte\obj\Debug\netcoreapp3.1\Vkontakte.MvcApplicationPartsAssemblyInfo.cache
 D:\w\4\Vkontakte\obj\Debug\netcoreapp3.1\Razor\Views\Users\_EditAvatar.cshtml.g.cs
+D:\w\4\Vkontakte\obj\Debug\netcoreapp3.1\Razor\Views\Friends\_Friends.cshtml.g.cs
+D:\w\4\Vkontakte\obj\Debug\netcoreapp3.1\Razor\Views\Users\AdvancedSearch.cshtml.g.cs
+D:\w\4\Vkontakte\obj\Debug\netcoreapp3.1\Razor\Views\Users\_Users.cshtml.g.cs

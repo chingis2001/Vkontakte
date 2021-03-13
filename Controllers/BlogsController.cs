@@ -26,7 +26,7 @@ namespace Vkontakte.Controllers
             Guid IdUser = Guid.Parse(HttpContext.User.Identity.Name);
             IEnumerable<Блог> блоги = from блог in _context.Блог.Include(t => t.Подписчики).Include(t => t.Тематика)
                                       join подписчик in _context.Подписчик on блог.ID_Блога equals подписчик.ID_Блога
-                                      where подписчик.ID_Пользователя == IdUser
+                                      where подписчик.ID_Пользователя == IdUser && блог.Код_типа != 4
                                       select блог;
             блоги = блоги.ToList();
             ViewData["id"] = IdUser.ToString();
@@ -37,7 +37,7 @@ namespace Vkontakte.Controllers
             Guid IdUser = Guid.Parse(HttpContext.User.Identity.Name);
             var блоги = from блог in _context.Блог.Include(t => t.Подписчики).Include(t => t.Тематика)
                         join подписчик in _context.Подписчик on блог.ID_Блога equals подписчик.ID_Блога
-                        where подписчик.ID_Пользователя == IdUser && EF.Functions.Like(блог.Название, pattern + "%")
+                        where подписчик.ID_Пользователя == IdUser && EF.Functions.Like(блог.Название, pattern + "%") && блог.Код_типа != 4
                         select new
                         {
                             ID = блог.ID_Блога,
@@ -55,10 +55,10 @@ namespace Vkontakte.Controllers
             Guid IdUser = Guid.Parse(HttpContext.User.Identity.Name);
             var блоги_пользователя = (from блог in _context.Блог.Include(t => t.Подписчики).Include(t => t.Тематика)
                                       join подписчик in _context.Подписчик on блог.ID_Блога equals подписчик.ID_Блога
-                                      where подписчик.ID_Пользователя == IdUser
+                                      where подписчик.ID_Пользователя == IdUser && блог.Код_типа != 4
                                       select блог).ToList();
             var блоги = (from блог in _context.Блог.Include(t => t.Подписчики).Include(t => t.Тематика)
-                         where EF.Functions.Like(блог.Название, pattern + "%")
+                         where EF.Functions.Like(блог.Название, pattern + "%") && блог.Код_типа != 4
                          select блог).ToList().Except(блоги_пользователя);
             JsonResult jsonBlogs = Json(
                 (from блог in блоги
@@ -73,13 +73,14 @@ namespace Vkontakte.Controllers
                 ); ;
             return jsonBlogs;
         }
+        [AllowAnonymous]
         public IActionResult BlogPosts(string? id, int page = 0)
         {
             int pagesize = 4;
             List<PostBlogCommentActionViewModel> postBlogCommentActionViewModels = new List<PostBlogCommentActionViewModel>();
             Guid Id = Guid.Parse(id);
             Блог blog = _context.Блог.Include(t => t.Подписчики).FirstOrDefault(t => t.ID_Блога == Id);
-            IEnumerable<Запись> Записи = _context.Запись.Where(t => t.ID_Блога == blog.ID_Блога).OrderByDescending(t => t.Дата_публикации).Skip(page * pagesize).Take(pagesize).ToList();
+            IEnumerable<Запись> Записи = _context.Запись.Where(t => t.ID_Блога == blog.ID_Блога && t.Удалён == 0).OrderByDescending(t => t.Дата_публикации).Skip(page * pagesize).Take(pagesize).ToList();
             foreach (var post in Записи)
             {
                 IEnumerable<Коментарий> коментарии = _context.Коментарий.Include(t => t.Пользователь).Where(t => t.ID_Записи == post.ID_Записи).ToList();
@@ -115,7 +116,7 @@ namespace Vkontakte.Controllers
         }
         public IActionResult FindCommunity(int page = 0)
         {
-            var Topics = _context.Тематика.Select(t => t.Наименование).ToList();
+            var Topics = _context.Тематика.Where(t=>t.Код_типа_тематики!=15).Select(t => t.Наименование).ToList();
             ViewBag.Topics = Topics;
             int pagesize = 10;
             Guid IdUser = Guid.Parse(HttpContext.User.Identity.Name);
@@ -124,6 +125,7 @@ namespace Vkontakte.Controllers
             блоги = from блог in блоги
                     join другойблог in _context.Блог.Include(t => t.Подписчики).Include(t => t.Тематика).ToList()
                     on блог.ID_Блога equals другойблог.ID_Блога
+                    where блог.Код_типа != 4
                     select другойблог;
             блоги = блоги.Skip(page * pagesize).Take(pagesize).ToList();
             return View(блоги);
@@ -132,8 +134,8 @@ namespace Vkontakte.Controllers
         {
             TopicsTypesViewModel topicsTypesViewModel = new TopicsTypesViewModel
             {
-                тематики = _context.Тематика.ToList(),
-                типы = _context.ТипыБлогов.ToList()
+                тематики = _context.Тематика.Where(t=>t.Код_типа_тематики != 4).ToList(),
+                типы = _context.ТипыБлогов.Where(t=>t.Код_типа_блога!=15).ToList()
             };
             return View(topicsTypesViewModel);
         }
@@ -156,7 +158,7 @@ namespace Vkontakte.Controllers
         }
         public JsonResult FilterPaginateOrderCommunityJson(string? sortState, string? pattern, string? topic, int page = 0)
         {
-            var Topics = _context.Тематика.Select(t => t.Наименование).ToList();
+            var Topics = _context.Тематика.Where(t=>t.Код_типа_тематики!=15).Select(t => t.Наименование).ToList();
             ViewBag.Topics = Topics;
             int pagesize = 10;
             Guid IdUser = Guid.Parse(HttpContext.User.Identity.Name);
@@ -167,6 +169,7 @@ namespace Vkontakte.Controllers
                 блоги = (from блог in блоги
                          join другойблог in _context.Блог.Include(t => t.Подписчики).Include(t => t.Тематика).Where(t => EF.Functions.Like(t.Название, pattern + "%")).ToList()
                          on блог.ID_Блога equals другойблог.ID_Блога
+                         where блог.Код_типа != 4
                          select другойблог).ToList();
             }
             else 
@@ -174,6 +177,7 @@ namespace Vkontakte.Controllers
                 блоги = (from блог in блоги
                          join другойблог in _context.Блог.Include(t => t.Подписчики).Include(t => t.Тематика).ToList()
                          on блог.ID_Блога equals другойблог.ID_Блога
+                         where блог.Код_типа != 4
                          select другойблог).ToList();
             }
             if (topic != "" && topic != null)  

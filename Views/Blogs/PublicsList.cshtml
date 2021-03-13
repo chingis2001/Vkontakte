@@ -49,89 +49,94 @@
 </div>
 @section Additional
 {
-    <div class="row" style="margin-left:0.4rem">
-        <div class="col-12" style="background-color: #ffffff; border-radius: 4px;">
-            <div class="row" style="margin-top:0.4rem">
-                <div class="col-12">
-                    <p style="font-size:12px; margin-bottom:0.4rem">
-                        <a asp-controller="Blogs" asp-action="PublicsList">Мои сообщества</a>
-                    </p>
+    <div class="col-3">
+        <div class="row" style="margin-left:0.4rem">
+            <div class="col-12" style="background-color: #ffffff; border-radius: 4px;">
+                <div class="row" style="margin-top:0.4rem">
+                    <div class="col-12">
+                        <p style="font-size:14px; margin-bottom:0.4rem">
+                            <a asp-controller="Blogs" asp-action="PublicsList">Мои сообщества</a>
+                        </p>
+                    </div>
                 </div>
-            </div>
-            <div class="row" style="margin-top:0.4rem; margin-bottom: 0.4rem">
-                <div class="col-12">
-                    <p style="font-size:12px; margin-bottom:0.4rem">
-                        <a asp-controller="Blogs" asp-action="FindCommunity">Поиск сообществ</a>
-                    </p>
+                <div class="row" style="margin-top:0.4rem; margin-bottom: 0.4rem">
+                    <div class="col-12">
+                        <p style="font-size:14px; margin-bottom:0.4rem">
+                            <a asp-controller="Blogs" asp-action="FindCommunity">Поиск сообществ</a>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 }
-<script>
-    let findButton = document.getElementById("FindByName");
-    findButton.addEventListener("input", function (event) {
-        var id = event.target.nextSibling.id;
-        var data = { pattern: event.target.value, id: id };
-        let request = new XMLHttpRequest();
-        function reqReadyStateChange() {
-            if (request.readyState == 4 && request.status == 200) {
-                response = JSON.parse(request.responseText);
-                let div = document.getElementById("blogslist").firstChild;
-                while (div.firstChild) {
-                    div.removeChild(div.firstChild);
-                }
-                for (let i = 0; i < response.length; i++) {
-                    let blogdiv = document.createElement('div');
-                    blogdiv.setAttribute('class', 'row');
-                    blogdiv.style = 'margin-bottom: 1rem; border-bottom: 1px solid #f1f1f4';
-                    let coldiv = document.createElement('div');
-                    coldiv.setAttribute('class', 'col-12');
-                    coldiv.style = 'margin-bottom:1rem';
-                    coldiv.innerHTML =
-                        '<p style="margin-bottom:0;">' + '<a href="/Blogs/BlogPosts/' + response[i].id + '">' + response[i].название + '</a>' + '</p>' +
-                        '<p style="margin-bottom:0; font-size:12px">' + response[i].тематика + '</p>' +
-                        '<p style="margin-bottom:0; font-size:12px">' + response[i].подписчики + ' подписчиков' + '</p>' +
-                        '<p style="margin-bottom:0">' + '<a style="font-size:12px" href="" class="btn btn-primary">Отписаться</a>';
-                    blogdiv.appendChild(coldiv);
-                    div.appendChild(blogdiv);
-                }
-            }
-        }
-        body = "id=" + data.id + "&pattern=" + data.pattern;
-        request.open("POST", "/Blogs/FindByName");
-        request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        request.onreadystatechange = reqReadyStateChange;
-        request.send(body);
-    });
-    let subscription = document.getElementsByClassName("subscription");
-    for (let i = 0; i < subscription.length; i++) {
-        subscription[i].addEventListener("click", function (event) {
-            event.preventDefault();
-            let btn = event.target;
-            let data = { id: btn.id };
+@section Scripts
+{
+    <script>
+        let findButton = document.getElementById("FindByName");
+        findButton.addEventListener("input", function (event) {
+            var id = event.target.nextSibling.id;
+            var data = { pattern: event.target.value, id: id };
             let request = new XMLHttpRequest();
             function reqReadyStateChange() {
                 if (request.readyState == 4 && request.status == 200) {
-                    let response = JSON.parse(request.responseText);
-                    let a = event.target;
-                    if (response.action == "subscribe") {
-                        a.classList.toggle('btn-primary');
-                        a.classList.toggle('btn-light');
-                        a.innerText = "Вы подписанны";
+                    response = JSON.parse(request.responseText);
+                    let div = document.getElementById("blogslist").firstChild;
+                    while (div.firstChild) {
+                        div.removeChild(div.firstChild);
                     }
-                    else {
-                        a.classList.toggle('btn-primary');
-                        a.classList.toggle('btn-light');
-                        a.innerText = "Подписаться";
+                    for (let i = 0; i < response.length; i++) {
+                        let blogdiv = document.createElement('div');
+                        blogdiv.setAttribute('class', 'row');
+                        blogdiv.style = 'margin-bottom: 1rem; border-bottom: 1px solid #f1f1f4';
+                        let coldiv = document.createElement('div');
+                        coldiv.setAttribute('class', 'col-12');
+                        coldiv.style = 'margin-bottom:1rem';
+                        coldiv.innerHTML =
+                            '<p style="margin-bottom:0;">' + '<a href="/Blogs/BlogPosts/' + response[i].id + '">' + response[i].название + '</a>' + '</p>' +
+                            '<p style="margin-bottom:0; font-size:12px">' + response[i].тематика + '</p>' +
+                            '<p style="margin-bottom:0; font-size:12px">' + response[i].подписчики + ' подписчиков' + '</p>' +
+                            '<p style="margin-bottom:0">' + '<a style="font-size:12px" href="" class="btn btn-primary">Отписаться</a>';
+                        blogdiv.appendChild(coldiv);
+                        div.appendChild(blogdiv);
                     }
                 }
             }
-            body = "id=" + data.id;
-            request.open("POST", "/Blogs/Subscribe");
+            body = "id=" + data.id + "&pattern=" + data.pattern;
+            request.open("POST", "/Blogs/FindByName");
             request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
             request.onreadystatechange = reqReadyStateChange;
             request.send(body);
         });
-    }
-</script>
+        let subscription = document.getElementsByClassName("subscription");
+        for (let i = 0; i < subscription.length; i++) {
+            subscription[i].addEventListener("click", function (event) {
+                event.preventDefault();
+                let btn = event.target;
+                let data = { id: btn.id };
+                let request = new XMLHttpRequest();
+                function reqReadyStateChange() {
+                    if (request.readyState == 4 && request.status == 200) {
+                        let response = JSON.parse(request.responseText);
+                        let a = event.target;
+                        if (response.action == "subscribe") {
+                            a.classList.toggle('btn-primary');
+                            a.classList.toggle('btn-light');
+                            a.innerText = "Вы подписанны";
+                        }
+                        else {
+                            a.classList.toggle('btn-primary');
+                            a.classList.toggle('btn-light');
+                            a.innerText = "Подписаться";
+                        }
+                    }
+                }
+                body = "id=" + data.id;
+                request.open("POST", "/Blogs/Subscribe");
+                request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                request.onreadystatechange = reqReadyStateChange;
+                request.send(body);
+            });
+        }
+    </script>
+}

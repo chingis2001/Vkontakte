@@ -6,11 +6,11 @@
 <div class="row">
     <div id="UsersCol" class="col-12" style="background-color: #ffffff; border-radius: 4px;">
         <div class="row" style="margin-top:0.4rem">
-            <div class="col-9">
+            <div class="col-8">
                 <p>Предолженные друзья</p>
             </div>
-            <div class="col-3">
-                <a style="font-size:12px">Расширенный поиск</a>
+            <div class="col-4">
+                <a asp-controller="Users" asp-action="AdvancedSearch" style="font-size:12px">Расширенный поиск</a>
             </div>
         </div>
         <div id="findInput" class="row" style="margin-bottom:1rem">
@@ -30,8 +30,8 @@
                     {
                         <div class="col-4">
                             <div class="row">
-                                <div style="font-size:12px" class="col-7">
-                                    <p style="margin-bottom:0">@Model[i + j].Имя @Model[i + j].Фамилия</p>
+                                <div style="font-size:12px; padding-left:0" class="col-7">
+                                    <a asp-controller="Users" asp-action="GetUserInfo" asp-route-id="@Model[i + j].ID" style="color: #000; margin-bottom:0">@Model[i + j].Имя @Model[i + j].Фамилия</a>
                                     <p>Общие друзья: @Model[i + j].Количество_общих_друзей</p>
                                 </div>
                                 <div class="col-3">
@@ -49,58 +49,59 @@
 </div>
 @section Additional
 {
-    <div class="row" style="margin-left:0.4rem">
-        <div class="col-12" style="background-color: #ffffff; border-radius: 4px;">
-            <div class="row" style="margin-top:0.4rem">
-                <div class="col-12">
-                    <p>
-                        <a asp-action="Index" asp-controller="Friends">Мои друзья</a>
-                    </p>
-                </div>
-                <div class="col-12">
-                    <p>
-                        <a asp-action="FindUsers" asp-controller="Users">Поиск друзей</a>
-                    </p>
+    <div class="col-3">
+        <div class="row" style="margin-left:0.4rem">
+            <div class="col-12" style="background-color: #ffffff; border-radius: 4px;">
+                <div class="row" style="font-size: 14px; margin-top:0.4rem">
+                    <div class="col-12">
+                        <p>
+                            <a asp-action="Index" asp-controller="Friends">Мои друзья</a>
+                        </p>
+                    </div>
+                    <div class="col-12">
+                        <p>
+                            <a asp-action="FindUsers" asp-controller="Users">Поиск друзей</a>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 }
-<script>
-    let page = 1;
-    onscroll = function () {
-        if (window.scrollY + 1 >= document.documentElement.scrollHeight - document.documentElement.clientHeight) {
-            let data = { page: page };
-            let request = new XMLHttpRequest();
-            function reqReadyStateChange() {
-                if (request.readyState == 4 && request.status == 200) {
-                    page = page + 1;
-                    response = request.responseText;
-                    let div = document.getElementById('UsersCol');
-                    div.innerHTML = div.innerHTML + response;
+@section Scripts{ 
+    <script>
+        let page = 1;
+        onscroll = function () {
+            if (window.scrollY + 1 >= document.documentElement.scrollHeight - document.documentElement.clientHeight) {
+                let data = { page: page };
+                let request = new XMLHttpRequest();
+                function reqReadyStateChange() {
+                    if (request.readyState == 4 && request.status == 200) {
+                        page = page + 1;
+                        response = request.responseText;
+                        let div = document.getElementById('UsersCol');
+                        div.innerHTML = div.innerHTML + response;
+                    }
                 }
+                body = "page=" + data.page;
+                request.open("POST", "/Users/FindUsers");
+                request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                request.onreadystatechange = reqReadyStateChange;
+                request.send(body);
             }
-            body = "page=" + data.page;
-            request.open("POST", "/Users/FindUsers");
-            request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-            request.onreadystatechange = reqReadyStateChange;
-            request.send(body);
+        };
+        let idElem = "";
+        hubConnection.on("FriendRequest", function (response) {
+            if (response == "Sended") {
+                let svg = document.getElementById(idElem);
+                svg.innerHTML = '<path fill-rule="evenodd" d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm9.854-2.854a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>';
+                svg.onclick = null;
+            }
+        });
+        function sendFriendRequest(element) {
+            let friendId = element.id;
+            idElem = element.id;
+            hubConnection.invoke("SendFriendRequest", friendId);
         }
-    };
-    let idElem = "";
-    const hubConnection = new signalR.HubConnectionBuilder().withUrl("/chat").build();
-    hubConnection.on("FriendRequest", function (response) {
-        if (response == "Sended")
-        {
-            let svg = document.getElementById(idElem);
-            svg.innerHTML = '<path fill-rule="evenodd" d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm9.854-2.854a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L12.5 7.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>';
-            svg.onclick = null;
-        }    
-    });
-    function sendFriendRequest(element) {
-        let friendId = element.id;
-        idElem = element.id;
-        hubConnection.invoke("SendFriendRequest", friendId);
-    }
-    hubConnection.start();
-</script>
+    </script>
+}

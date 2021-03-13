@@ -2,12 +2,11 @@
 @{
     Guid IdUser = Guid.Parse(Context.User.Identity.Name);
 }
-<div id="PostBanner" class="post-banner">
+<div id="PostBanner" class="post-banner" onclick="closeDetail(this)" style="overflow-y:hidden">
 </div>
-<div id="PostContent" class="col-12" style="z-index:1000000;">
-    <div class="row" style="position: fixed; top: 20px; left: 0; overflow-y: scroll;" id="contentRow">
-        <div id="postwithcomments" style="margin-left:auto; margin-right:auto;width:665px; background: #ffffff; border-radius: 4px">
-            <div class="row"><div class="col-11"></div><div class="col-1"><p onclick="closeDetail(this)" style="cursor:pointer" class="closeComments">X</p></div></div>
+<div id="PostContent" class="col-12" style="z-index:1000000">
+    <div class="row" style="padding-top: 20px;position: fixed; top: 0px; overflow-y: scroll; scrollbar-width: none; overflow-x: hidden" id="contentRow">
+        <div id="postwithcomments" style="margin-left:auto; margin-right:auto; width:665px; background: #ffffff; border-radius: 4px; margin-bottom: 1rem">
             <div class="row">
                 <div class="col-12">
                     <h6 style="margin:0.4rem 1rem 0.4rem 1rem; font-size:12px; color:#4d5885">@Model.Блог.Название</h6>
@@ -16,7 +15,9 @@
             </div>
             <div class="row">
                 <div class="col-12">
-                    <p style="margin:0.4rem 1rem 0.4rem 1rem; font-size:12px">@Model.Запись.Текст</p>
+                    <div class="col-12" style="margin:0.4rem 1rem 0.4rem 0rem; font-size:12px">
+                        @Html.Raw(Model.Запись.Текст)
+                    </div>
                 </div>
             </div>
             <div class="row">
@@ -34,11 +35,11 @@
                         {
                             @if (i == 0)
                             {
-                                <img style="max-height:350px; max-width:280px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(Model.Данные.ElementAt(i).Data))" />
+                                <img style="max-height:604px; max-width:300px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(Model.Данные.ElementAt(i).Data))" />
                             }
                             else
                             {
-                                <img style="max-height:175px; max-width:280px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(Model.Данные.ElementAt(i).Data))" />
+                                <img style="max-height:302px; max-width:300px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(Model.Данные.ElementAt(i).Data))" />
                             }
                         }
                     }
@@ -46,14 +47,14 @@
                     {
                         @foreach (var data in Model.Данные)
                         {
-                            <img style="max-height:350px; max-width:280px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(data.Data))" />
+                            <img style="max-height:604px; max-width:300px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(data.Data))" />
                         }
                     }
                     @if (Model.Данные.Count() == 1)
                     {
                         @foreach (var data in Model.Данные)
                         {
-                            <img style="max-height:350px; max-width:600px; float:left;" src="data:image/jpeg;base64,@(Convert.ToBase64String(data.Data))" />
+                            <img style="max-height:604px; max-width:602px; float:left;" src="data:image/jpeg;base64,@(Convert.ToBase64String(data.Data))" />
                         }
                     }
                 </div>
@@ -92,22 +93,25 @@
                     </p>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-12">
+            <div class="row"><div class="col-12" id="comments_block">
                     @foreach (var comment in Model.Коментарии)
                     {
-                        <div class="row" style="border-bottom: 1px solid #adb2bc; margin-left:1rem; margin-right:1rem">
+                        <div class="row" style="border-bottom: 1px solid #adb2bc; margin-left:1rem; margin-right:1rem;margin-bottom:0.4rem">
                             <div class="col-12">
                                 <p style="font-size: 12px; color: #4d5885; padding:0; margin:0; margin-top: 0.4rem;">@comment.Пользователь.Имя @comment.Пользователь.Фамилия</p>
                                 <p style="font-size: 12px">@comment.Текст_коментария</p>
                             </div>
                         </div>
                     }
-                </div>
-            </div>
-            <div class="row" style="margin-top:0.4rem; margin-bottom:0.4rem; position: sticky; bottom: 4px">
-                <div class="col-12">
-                    <textarea class="form-control" placeholder="Введите комментарий"></textarea>
+                </div></div><div class="row" style="margin-bottom: 0.4rem; position: sticky; bottom: 0px; background-color:#ffffff; padding-left:1rem; padding-right:1rem">
+                <div class="col-11"><textarea class="form-control" rows="2" placeholder="Введите комментарий" style="font-size:12px"></textarea>
+                </div><div class="col-1" style="padding-left:0">
+                    <button style="margin-top: 0.2rem; border-style: none; background-color: #ffffff;" id="@Model.Запись.ID_Записи" onclick="addComent(this)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-left-dots" viewBox="0 0 16 16">
+                            <path d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4.414A2 2 0 0 0 3 11.586l-2 2V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12.793a.5.5 0 0 0 .854.353l2.853-2.853A1 1 0 0 1 4.414 12H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z" />
+                            <path d="M5 6a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0zm4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+                        </svg>
+                    </button> 
                 </div>
             </div>
         </div>

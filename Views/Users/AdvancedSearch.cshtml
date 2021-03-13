@@ -1,0 +1,193 @@
+﻿@model List<Vkontakte.Models.UserFriendBlogViewModel>
+@{
+    ViewData["Title"] = "FindFriends";
+}
+<div class="row">
+    <div class="col-12" style="background-color: #ffffff; border-radius: 4px;">
+        <div class="row" style="margin-top: 1rem; margin-left: 1rem">
+            <div class="col-4">
+                <h5>Поиск друзей</h5>
+            </div>
+        </div>
+        <div class="row" style="margin-bottom:1rem">
+            <div class="col-12" style="margin-top:0.4rem">
+                <form asp-controller="Users" asp-action="FindByName">
+                    <input name="pattern" placeholder="Введите запрос" id="FindByName" class="form-control" type="text" style="border-right:none; border-left:none" />
+                    <button type="submit" class="d-none"></button>
+                </form>
+            </div>
+        </div>
+        <div id="FriendsContent">
+            @foreach (var item in Model)
+            {
+                <div class="row" style="font-size:12px; margin-left: 0.6rem; margin-bottom: 1rem">
+                    <div id="photo" class="col-2">
+                        @if (item.Аватарка != null)
+                        {
+                            <div style="background-image:url(data:image/jpeg;base64,@(Convert.ToBase64String(item.Аватарка.Данные.Data)));
+                                            width:70px;
+                                            height:70px;
+                                            background-size:cover;
+                                            background-position: center center;
+                                            border-radius: 35px">
+                            </div>
+                        }
+                        else
+                        {
+                            <img style="width: 70px; border-radius:35px" src="~/images/nofoto.jpg" />
+                        }
+                    </div>
+                    <div class="col-6" style="padding-top:0.6rem">
+                        <a style="font-weight:bold" asp-controller="Users" asp-action="GetUserInfo" asp-route-id="@item.пользователь.ID">@item.пользователь.Фамилия @item.пользователь.Имя</a>
+                        <p>@item.пользователь.Город</p>
+                    </div>
+                    <div class="col-4" style="padding-top:0.6rem">
+                        <a style="font-size:12px" id="@item.пользователь.ID" onclick="sendFriendRequest(this)" href="##" class="btn btn-primary">Добавить в друзья</a>
+                    </div>
+                </div>
+            }
+        </div>
+        @if (Model.Count() == 0)
+        {
+            <div class="row" style="margin-left: 0.6rem; margin-bottom: 1rem">
+                <div class="col-8">
+                    <p>Запросов нет</p>
+                </div>
+            </div>
+        }
+        <div class="row" style="width: 5rem"></div>
+    </div>
+</div>
+@section Additional
+{
+    <div class="col-3">
+        <div class="row" style="margin-left:0.4rem">
+            <div class="col-12" style="background-color: #ffffff; border-radius: 4px;">
+                <div class="row" style="font-size:14px ;margin-top:0.4rem">
+                    <div class="col-12">
+                        <p>
+                            <a asp-action="Index" asp-controller="Friends">Мои друзья</a>
+                        </p>
+                    </div>
+                    <div class="col-12">
+                        <p>
+                            <a asp-action="FindUsers" asp-controller="Users">Поиск друзей</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="margin-left:0.4rem; margin-top:1rem">
+            <div class="col-12" style="padding-top:1rem; background-color: #ffffff; border-radius: 4px;">
+                <div class="row" style="font-size:12px; margin-top:0.4rem">
+                    <div class="col-12">
+                        <input style="font-size:12px" type="text" class="form-control" placeholder="Страна" id="Country" />
+                    </div>
+                </div>
+                <div class="row" style="font-size:12px;margin-top:0.4rem">
+                    <div class="col-12">
+                        <input style="font-size:12px" type="text" class="form-control" placeholder="Город" id="City" />
+                    </div>
+                </div>
+                <div class="row" style="font-size:12px;margin-top:0.4rem;margin-bottom:1rem">
+                    <div class="col-12">
+                        <select style="font-size:12px" id="Order" class="form-control">
+                            <option value="Default">По умолчанию</option>
+                            <option value="Abc">По алфафиту а-я</option>
+                            <option value="Cba">По алфавиту я-а</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@section Scripts{ 
+    <script>
+        let idElem = "";
+        hubConnection.on("FriendRequest", function (response) {
+            if (response == "Sended") {
+                let a = document.getElementById(idElem);
+                a.classList.toggle("btn-primary");
+                a.classList.toggle("btn-light");
+                a.innerHTML = "Запрос отправлен";
+                a.onclick = null;
+            }
+        });
+        function sendFriendRequest(element) {
+            let friendId = element.id;
+            idElem = element.id;
+            hubConnection.invoke("SendFriendRequest", friendId);
+        }
+        let Request = function (data) {
+            let request = new XMLHttpRequest();
+            function reqReadyStateChange() {
+                if (request.readyState == 4 && request.status == 200) {
+                    page = page + 1;
+                    text = request.responseText;
+                    let div = document.getElementById("FriendsContent");
+                    div.innerHTML += text;
+                }
+            }
+            body = "sortstate=" + data.sortstate + "&country=" + data.country + "&city=" + data.city + "&pattern=" + data.pattern + "&page=" + data.page + "&repeat=" + data.repeat;
+            request.open("POST", "/Users/AdvancedSearch");
+            request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            request.onreadystatechange = reqReadyStateChange;
+            request.send(body);
+        }
+        let page = 1;
+        let sortstate = null;
+        let country = "";
+        let city = "";
+        let pattern = "";
+        let repeat = 1;
+        onscroll = function () {
+            if (window.scrollY + 1 >= document.documentElement.scrollHeight - document.documentElement.clientHeight) {
+                let data = { page: page, country: country, pattern: pattern, sortstate: sortstate, city: city, repeat: repeat };
+                Request(data)
+            }
+        }
+        document.getElementById("FindByName").addEventListener("input", function (event) {
+            pattern = event.target.value;
+            page = 0;
+            let data = { page: page, country: country, pattern: pattern, sortstate: sortstate, city: city, repeat: repeat };
+            let div = document.getElementById("FriendsContent");
+            while (div.firstChild) {
+                div.removeChild(div.firstChild);
+            }
+            Request(data);
+        });
+        document.addEventListener("DOMContentLoaded", function (event) {
+            document.getElementById("Country").addEventListener("input", function (event) {
+                country = event.target.value;
+                page = 0;
+                let data = { page: page, country: country, pattern: pattern, sortstate: sortstate, city: city, repeat: repeat };
+                let div = document.getElementById("FriendsContent");
+                while (div.firstChild) {
+                    div.removeChild(div.firstChild);
+                }
+                Request(data);
+            });
+            document.getElementById("City").addEventListener("input", function (event) {
+                city = event.target.value;
+                page = 0;
+                let data = { page: page, country: country, pattern: pattern, sortstate: sortstate, city: city, repeat: repeat };
+                let div = document.getElementById("FriendsContent");
+                while (div.firstChild) {
+                    div.removeChild(div.firstChild);
+                }
+                Request(data);
+            });
+            document.getElementById("Order").addEventListener("change", function (event) {
+                sortstate = event.target.value;
+                page = 0;
+                let data = { page: page, country: country, pattern: pattern, sortstate: sortstate, city: city, repeat: repeat };
+                let div = document.getElementById("FriendsContent");
+                while (div.firstChild) {
+                    div.removeChild(div.firstChild);
+                }
+                Request(data);
+            });
+        });
+    </script>
+}

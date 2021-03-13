@@ -19,6 +19,7 @@ namespace Vkontakte.Models
         public Guid ID_Записи { get; set; }
         public string Название { get; set; }
         public string Текст { get; set; }
+        public byte Удалён { get; set; }
         public DateTime Дата_публикации { get; set; }
         public Guid ID_Блога { get; set; }
         public Блог Блог { get; set; }

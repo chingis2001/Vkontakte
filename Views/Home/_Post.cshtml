@@ -4,7 +4,7 @@
 }
 @foreach (var item in Model)
 {
-<div class="col-12" style="background-color: #ffffff; border-radius: 4px; margin-bottom: 1rem">
+<div class="col-12" style="background-color: #ffffff; border-radius: 4px; margin-bottom: 1rem" onmouseover="postOnMouseOver(this)">
     <div class="row">
         <div class="col-12">
             <h6 style="margin:0.4rem 1rem 0.4rem 1rem; font-size:12px; color:#4d5885">@item.Блог.Название</h6>
@@ -13,7 +13,22 @@
     </div>
     <div class="row">
         <div class="col-12">
-            <p style="margin:0.4rem 1rem 0.4rem 1rem; font-size:12px">@item.Запись.Текст</p>
+            @if (item.Запись.Текст.Length > 512)
+            {
+                <div class="col-12" style="margin:0.4rem 1rem 0.4rem 0rem; font-size:12px">
+                    @Html.Raw(item.Запись.Текст.Substring(0, 512) + "</p>")
+                    <a style="cursor: pointer; color: #5f7c9f; text-decoration: underline" onclick="ExpandText(this)">Показать польностью...</a>
+                </div>
+                <div class="col-12 d-none" style="margin:0.4rem 1rem 0.4rem 0rem; font-size:12px">
+                    @Html.Raw(item.Запись.Текст)
+                </div>
+            }
+            else
+            {
+                <div class="col-12" style="margin:0.4rem 1rem 0.4rem 0rem; font-size:12px">
+                    @Html.Raw(item.Запись.Текст)
+                </div>
+            }
         </div>
     </div>
     <div class="row">
@@ -31,11 +46,11 @@
                 {
                     @if (i == 0)
                     {
-                        <img style="max-height:350px; max-width:280px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(item.Данные.ElementAt(i).Data))" />
+                        <img style="max-height:350px; max-width:255px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(item.Данные.ElementAt(i).Data))" />
                     }
                     else
                     {
-                        <img style="max-height:175px; max-width:280px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(item.Данные.ElementAt(i).Data))" />
+                        <img style="max-height:175px; max-width:255px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(item.Данные.ElementAt(i).Data))" />
                     }
                 }
             }
@@ -43,14 +58,14 @@
             {
                 @foreach (var data in item.Данные)
                 {
-                    <img style="max-height:350px; max-width:280px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(data.Data))" />
+                    <img style="max-height:350px; max-width:255px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(data.Data))" />
                 }
             }
             @if (item.Данные.Count() == 1)
             {
                 @foreach (var data in item.Данные)
                 {
-                    <img style="max-height:350px; max-width:600px; float:left;" src="data:image/jpeg;base64,@(Convert.ToBase64String(data.Data))" />
+                    <img style="max-height:350px; max-width:510px; float:left;" src="data:image/jpeg;base64,@(Convert.ToBase64String(data.Data))" />
                 }
             }
         </div>

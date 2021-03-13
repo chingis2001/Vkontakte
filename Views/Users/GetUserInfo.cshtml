@@ -4,10 +4,10 @@
     ViewData["title"] = "UserInfo";
     Guid IdUser = Guid.Parse(Context.User.Identity.Name);
 }
-<div id="maindiv" style="width:795px; height:auto">
-    @if (Model.пользователь.ID != IdUser) 
+<div id="maindiv" style="width:795px; height:auto" class="row">
+    @if (Model.пользователь.ID != IdUser)
     {
-        <div style="width: 230px; height:auto; float:left; background-color: #ffffff; border-radius: 4px">
+        <div style="width: 230px; height:308.8px; float:left; margin-right:0.9rem; background-color: #ffffff; border-radius: 4px; position: sticky; top: 70px">
             <div class="col-12" style="padding-top:0.8rem">
                 <div class="row">
                     <div id="photo" class="col-12">
@@ -32,30 +32,105 @@
                     <div style="width: 210px" class="col-12">
                         <div class="row">
                             <div class="col-12" style="margin-top: 0.4rem;">
-                                <a class="btn btn-primary" style="font-size:12px; width:200px" asp-action="Dialog" asp-controller="Messages" asp-route-id="@Model.пользователь.ID">Перейти к диалогу</a>
+                                <a class="btn btn-primary" style="font-size:12px; width:200px" asp-action="Dialog" asp-controller="Messages" asp-route-id="@Model.пользователь.ID" asp-route-typeid="friendid">Перейти к диалогу</a>
                             </div>
                         </div>
                         <div class="row" style="margin-top:0.4rem; margin-bottom: 1rem">
                             @if (Model.дружбы.FirstOrDefault(t => t.ID_Друга == IdUser) == null)
                             {
                                 <div class="col-12">
-                                    <a style="font-size:12px; width:200px" asp-action="" asp-controller="" class="btn btn-primary">Добавить в друзья</a>
+                                    <a href="javascript:void(0);" onclick="sendFriendRequest(this)" id="@Model.пользователь.ID" style="font-size:12px; width:200px; cursor: pointer" class="btn btn-primary">Добавить в друзья</a>
                                 </div>
                             }
                             else
                             {
-                                <div class="col-12">
-                                    <a style="font-size:12px; width:200px" asp-action="" asp-controller="" class="btn btn-secondary">Удалить из друзей</a>
-                                </div>
+                                @if (Model.дружбы.FirstOrDefault(t => t.ID_Друга == IdUser).Код_статуса == 2)
+                                {
+                                    <div class="col-12">
+                                        <a id="@Model.пользователь.ID" onclick="sendRejectFriendship(this)" style="font-size:12px; width:200px" href="javascript:void(0);" class="btn btn-light">Удалить из друзей</a>
+                                    </div>
+                                }
+                                @if (Model.дружбы.FirstOrDefault(t => t.ID_Друга == IdUser).Код_статуса == 5)
+                                {
+                                    <div class="col-12">
+                                        <a id="@Model.пользователь.ID" onclick="sendRejectRequest(this)" style="font-size:12px; width:200px" href="javascript:void(0);" class="btn btn-light">Отменить заявку</a>
+                                    </div>
+                                }
+                                @if (Model.дружбы.FirstOrDefault(t => t.ID_Друга == IdUser).Код_статуса == 1)
+                                {
+                                    <div class="col-12">
+                                        <a id="@Model.пользователь.ID" onclick="sendAddToFriends(this)" style="font-size:12px; width:200px" href="javascript:void(0);" class="btn btn-light">Добавить в друзья</a>
+                                    </div>
+                                }
+                                @if (Model.дружбы.FirstOrDefault(t => t.ID_Друга == IdUser).Код_статуса == 9)
+                                {
+                                    <div class="col-12">
+                                        <a onclick="sendFriendRequest(this)" href="javascript:void(0);" id="@Model.пользователь.ID" style="font-size:12px; width:200px; cursor: pointer" class="btn btn-primary">Добавить в друзья</a>
+                                    </div>
+                                }
+                                @if (Model.дружбы.FirstOrDefault(t => t.ID_Друга == IdUser).Код_статуса == 3)
+                                {
+                                    <div class="col-12">
+                                        <a onclick="sendFriendRequest(this)" href="javascript:void(0);" id="@Model.пользователь.ID" style="font-size:12px; width:200px; cursor: pointer" class="btn btn-primary">Добавить в друзья</a>
+                                    </div>
+                                }
                             }
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div style="width:550px; height:auto; float:right; background-color:#ffffff; border-radius:4px">
-            <div class="col-12">
-                <div class="row" style="background-color: #ffffff; border-radius: 4px; margin-top: 1rem;">
+    }
+    else
+    {
+        <div style="width: 230px; height:270.8px; background-color: #ffffff; border-radius: 4px; position: sticky; top: 70px; float:left; margin-right:0.9rem">
+            <div class="col-12" style="padding-top:0.8rem;">
+                <div class="row">
+                    <div id="photo" class="col-12">
+                        @if (Model.Аватарка != null)
+                        {
+                            <div style="background-image:url(data:image/jpeg;base64,@(Convert.ToBase64String(Model.Аватарка.Данные.Data)));
+                                        width:200px;
+                                        height:200px;
+                                        background-size:cover;
+                                        background-position: center center;">
+                            </div>
+                        }
+                        else
+                        {
+                            <img style="width: 200px;" src="~/images/nofoto.jpg" />
+                        }
+                        <div id="editka" class="d-none" style="position:absolute; bottom:0; left:15px; width:200px; height:40px; background:#000000; opacity:0.5">
+                            <div class="col-12">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <a onclick="getEditForm(this)" style="cursor: pointer; text-decoration: none; font-size: 12px; color:aliceblue">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up" viewBox="0 0 16 16">
+                                                <path fill-rule="evenodd" d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5z" />
+                                            </svg>
+                                            Обновить фотографию
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12" style="padding-top:0.4rem; padding-bottom:0.4rem">
+                <div class="row">
+                    <div class="col-12 justify-content-center">
+                        <a asp-controller="Users" asp-action="EditInfo" asp-route-id="@Model.пользователь.ID" class="btn btn-light" style="font-size:12px; width:200px">Редактировать</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    <div style="width:550px; height:auto; float: right" >
+        <div class="col-12" id="posts_and_other_div">
+            @if (Model.пользователь.ID != IdUser)
+            {
+                <div id="user_personal_info" class="row" style="background-color: #ffffff; border-radius: 4px; margin-bottom: 1rem">
                     <div class="col-12">
                         <div class="row" style="border-bottom: 1px solid #eeeff2">
                             <div class="col-12">
@@ -77,7 +152,7 @@
                         <div style="text-align:center" class="row">
                             <div class="col-3">
                                 <a href="">
-                                    <p style="margin-bottom:0.2rem">@Model.дружбы.Count()</p>
+                                    <p style="margin-bottom:0.2rem">@Model.дружбы.Where(t => t.Код_статуса == 2).ToList().Count()</p>
                                     <p style="font-size:12px; color:#82858c">Друзей</p>
                                 </a>
                             </div>
@@ -96,55 +171,10 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    }
-    else
-    {
-        <div style="width: 230px; height:auto; float:left; background-color: #ffffff; border-radius: 4px">
-            <div class="col-12" style="padding-top:0.8rem">
-                <div class="row">
-                    <div id="photo" class="col-12">
-                        @if (Model.Аватарка != null)
-                        {
-                            <div style="background-image:url(data:image/jpeg;base64,@(Convert.ToBase64String(Model.Аватарка.Данные.Data))); 
-                                        width:200px;
-                                        height:200px;
-                                        background-size:cover;
-                                        background-position: center center;">
-                            </div>
-                        }
-                        else
-                        {
-                            <img style="width: 200px;" src="~/images/nofoto.jpg" />
-                        }
-                        <div id="editka" class="d-none" style="position:absolute; bottom:0; left:15px; width:200px; height:40px; background:#000000; opacity:0.5">
-                            <div class="col-12">
-                                <div class="row">
-                                    <div class="col-12">
-                                        <a onclick="getEditForm(this)" style="cursor: pointer; text-decoration: none; font-size: 12px; color:aliceblue">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up" viewBox="0 0 16 16">
-                                                <path fill-rule="evenodd" d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5z" />
-                                            </svg>
-                                        Обновить фотографию</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12" style="padding-top:0.4rem; padding-bottom:0.4rem">
-                <div class="row">
-                    <div class="col-12 justify-content-center">
-                        <a asp-controller="Users" asp-action="EditInfo" asp-route-id="@Model.пользователь.ID" class="btn btn-light" style="font-size:12px">Редактировать</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div style="width:550px; height:auto; float:right; background-color:#ffffff; border-radius:4px">
-            <div class="col-12">
-                <div class="row">
+            }
+            else
+            {
+                <div class="row" style="margin-bottom:1rem; background-color:#ffffff; border-radius:4px">
                     <div class="col-12">
                         <div class="row" style="border-bottom: 1px solid #eeeff2">
                             <div class="col-12">
@@ -166,7 +196,7 @@
                         <div style="text-align:center" class="row">
                             <div class="col-2">
                                 <a href="">
-                                    <p style="margin-bottom:0.2rem">@Model.дружбы.Count()</p>
+                                    <p style="margin-bottom:0.2rem">@Model.дружбы.Where(t => t.Код_статуса == 2).ToList().Count()</p>
                                     <p style="font-size:12px; color:#82858c">Друзей</p>
                                 </a>
                             </div>
@@ -185,69 +215,577 @@
                         </div>
                     </div>
                 </div>
-            </div>
+                <div id="add_new_post" class="row" style="margin-bottom:1rem; background-color:#ffffff; border-radius:4px">
+                    <div class="col-12" style="background-color: #ffffff; border-radius: 4px; margin-bottom: 1rem">
+                        <div class="row">
+                            <div class="col-12">
+                                <h5>Что у вас нового?</h5>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-bottom:0.4rem">
+                            <div class="col-12">
+                                <input type="hidden" id="BlogId" value="@Model.Id_personal_Blog" />
+                                <textarea id="message" placeholder="Введите сюда текст" class="form-control summernote" style="font-size:12px; border: none"></textarea>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-bottom:0.4rem">
+                            <div id="photoplace" class="col-12">
+                            </div>
+                        </div>
+                        <div class="row" style="margin-bottom:0.4rem">
+                            <div class="col-1" style="padding-left:1.8rem">
+                                <label for="Attachments" style="font-size:12px; cursor:pointer">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-camera" viewBox="0 0 16 16">
+                                        <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z" />
+                                        <path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z" />
+                                    </svg>
+                                </label>
+                                <input onchange="fileUpload(this)" class="d-none" type="file" id="Attachments" name="Attachments" />
+                            </div>
+                            <div class="col-2"></div>
+                            <div class="col-6">
+                            </div>
+                            <div class="col-3">
+                                <button id="SendBtn" onclick="SendBtn(this)" style="font-size:12px" class="btn btn-primary">Опубликовать</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            @foreach (var item in Model.записи_пользователя)
+            {
+                <div class="row">
+                    <div class="col-12" style="background-color: #ffffff; border-radius: 4px; margin-bottom: 1rem" onmouseover="postOnMouseOver(this)">
+                        <div class="row">
+                            <div class="col-10">
+                                <h6 style="margin:0.4rem 1rem 0.4rem 1rem; font-size:12px; color:#4d5885">@item.Блог.Название</h6>
+                                <p style=" margin:0.4rem 1rem 0.4rem 1rem; font-size: 10px">@item.Запись.Дата_публикации</p>
+                            </div>
+                            @if (item.Блог.ID_Создателя == IdUser)
+                            {
+                                <div style="padding-left:0" class="col-2">
+                                    <button name="@item.Запись.ID_Записи" value="0" onclick="deletePost(this)" style="text-decoration:none; color:#2a5885; background-color:#ffffff; border-style: none; font-size: 12px">Удалить</button>
+                                </div>
+                            }
+                        </div>
+                        <div class="row">
+                            <div class="col-12" style="margin:0.4rem 1rem 0.4rem 1rem; font-size:12px">
+                                @Html.Raw(item.Запись.Текст)
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div style="padding-left:30px" class="col-12">
+                                @if (item.Данные.Count() > 3)
+                                {
+                                    @foreach (var data in item.Данные)
+                                    {
+                                        <img style="max-height:200px; max-width:200px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(data.Data))" />
+                                    }
+                                }
+                                @if (item.Данные.Count() == 3)
+                                {
+                                    @for (int i = 0; i < item.Данные.Count(); i++)
+                                    {
+                                        @if (i == 0)
+                                        {
+                                            <img style="max-height:350px; max-width:255px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(item.Данные.ElementAt(i).Data))" />
+                                        }
+                                        else
+                                        {
+                                            <img style="max-height:175px; max-width:255px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(item.Данные.ElementAt(i).Data))" />
+                                        }
+                                    }
+                                }
+                                @if (item.Данные.Count() == 2)
+                                {
+                                    @foreach (var data in item.Данные)
+                                    {
+                                        <img style="max-height:510px; max-width:255px; float:left; margin-right:10px" src="data:image/jpeg;base64,@(Convert.ToBase64String(data.Data))" />
+                                    }
+                                }
+                                @if (item.Данные.Count() == 1)
+                                {
+                                    @foreach (var data in item.Данные)
+                                    {
+                                        <img style="max-height:510px; max-width:510px; float:left;" src="data:image/jpeg;base64,@(Convert.ToBase64String(data.Data))" />
+                                    }
+                                }
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-1"></div>
+                            <div class="col-10" style="margin-top:1rem;margin-bottom:1rem; border-bottom: 1px solid #adb2bc">
+                                <div class="col-1"></div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-1" style="margin-left:1rem; padding: 0">
+                                <p style="font-size:12px; margin-left: 1rem">
+                                    @if (item.Дествия.Contains(item.Дествия.FirstOrDefault(t => t.Пользователь.ID == IdUser && t.Код == 1)))
+                                    {
+                                        <svg onclick="addLike(this)" style="cursor:pointer" id="@item.Запись.ID_Записи" width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-heart likesbtn" fill="#ff0000" xmlns="http://www.w3.org/2000/svg">
+                                            <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z" />
+                                        </svg>
+                                        @item.Дествия.Where(t => t.Код == 1).ToList().Count()
+                                    }
+                                    else
+                                    {
+                                        <svg onclick="addLike(this)" style="cursor:pointer" id="@item.Запись.ID_Записи" width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-heart likesbtn" fill="#000000" xmlns="http://www.w3.org/2000/svg">
+                                            <path fill-rule="evenodd" d="M8 2.748l-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143c.06.055.119.112.176.171a3.12 3.12 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15z" />
+                                        </svg>
+                                        @item.Дествия.Where(t => t.Код == 1).ToList().Count()
+                                    }
+                                </p>
+                            </div>
+                            <div class="col-1" style="padding: 0">
+                                <p id="@item.Запись.ID_Записи" style="font-size:12px; margin-left: 1rem">
+                                    <svg onclick="getPostComents(this)" style="cursor: pointer; margin-right:0.2rem" width="1em" height="1em" viewBox="0 0 16 16" class="comentbtn bi bi-chat-square" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M14 1H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2.5a2 2 0 0 1 1.6.8L8 14.333 9.9 11.8a2 2 0 0 1 1.6-.8H14a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 0a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2.5a1 1 0 0 1 .8.4l1.9 2.533a1 1 0 0 0 1.6 0l1.9-2.533a1 1 0 0 1 .8-.4H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z" />
+                                    </svg>@item.Коментарии.Count()
+                                </p>
+                            </div>
+                            <div class="col-8"></div>
+                            <div class="col-1" style="padding: 0">
+                                <p style="font-size:12px; margin-left: 1rem">
+                                    <svg style="margin-right:0.2rem" width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-eye-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z" />
+                                        <path fill-rule="evenodd" d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" />
+                                    </svg>@item.Дествия.Where(t => t.Код == 2).ToList().Count()
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
         </div>
-    }
+    </div>
 </div>
-<script>
-    let photo = document.getElementById("photo");
-    function handler(event)
-    {
-        let editka = document.getElementById("editka");
-        if (event.type == 'mouseover')
-        {
-            editka.classList.toggle("d-none");
-        }
-        if (event.type == 'mouseout')
-        {
-            editka.classList.toggle("d-none");
-        }
-    }
-    photo.onmouseover = photo.onmouseout = handler;
-    function getEditForm(element) {
-        let request = new XMLHttpRequest();
-        function reqReadyStateChanche() {
-            if (request.readyState == 4 && request.status == 200) {
-                let response = request.responseText;
-                let div = document.getElementById('maindiv');
-                div.innerHTML = div.innerHTML + response;
+@section Scripts
+{
+    <script>
+        let photo = document.getElementById("photo");
+        function handler(event) {
+            let editka = document.getElementById("editka");
+            if (editka != null) {
+                if (event.type == 'mouseover') {
+                    editka.classList.toggle("d-none");
+                }
+                if (event.type == 'mouseout') {
+                    editka.classList.toggle("d-none");
+                }
             }
         }
-        request.open("POST", "/Users/EditAvatarForm");
-        request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        request.onreadystatechange = reqReadyStateChanche;
-        request.send();
-    }
-    function loadFile(element)
-    {
-        var files = element.files;
-        var formData = new FormData();
-        for (let i = 0; i != files.length; i++)
-        {
-            formData.append("files", files[i]);
-        }
-        for (let i = 0, f; f = files[i]; i++)
-        {
-            var fr = new FileReader();
-            fr.onload = (function (theFile) {
-                return function (e) {
-                    let img = document.createElement('img');
-                    img.setAttribute('src', e.target.result);
-                    img.setAttribute('style', 'margin-left:150px;max-width:320px;max-height: 350px');
-                    document.getElementById("photosplace").insertBefore(img, null);
-                };
-            })(f);
-            fr.readAsDataURL(f);
-        }
-        /*$.ajax({
-            url: "/Users/EditAvatar",
-            data: formData,
-            processData: false,
-            contentType: false,
-            type: "POST",
-            success: function (data) {
-                alert("Files Uploaded!");
+        photo.onmouseover = photo.onmouseout = handler;
+        function getEditForm(element) {
+            let request = new XMLHttpRequest();
+            function reqReadyStateChanche() {
+                if (request.readyState == 4 && request.status == 200) {
+                    let response = request.responseText;
+                    let div = document.getElementById('maindiv');
+                    div.innerHTML = div.innerHTML + response;
+                }
             }
+            request.open("POST", "/Users/EditAvatarForm");
+            request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            request.onreadystatechange = reqReadyStateChanche;
+            request.send();
+        }
+        function loadFile(element) {
+            var files = element.files;
+            var formData = new FormData();
+            for (let i = 0; i != files.length; i++) {
+                formData.append("files", files[i]);
+            }
+            for (let i = 0, f; f = files[i]; i++) {
+                var fr = new FileReader();
+                fr.onload = (function (theFile) {
+                    return function (e) {
+                        let img = document.createElement('img');
+                        img.setAttribute('src', e.target.result);
+                        img.setAttribute('style', 'margin-left:150px;max-width:320px;max-height: 350px');
+                        document.getElementById("photosplace").insertBefore(img, null);
+                    };
+                })(f);
+                fr.readAsDataURL(f);
+            }
+            /*$.ajax({
+                url: "/Users/EditAvatar",
+                data: formData,
+                processData: false,
+                contentType: false,
+                type: "POST",
+                success: function (data) {
+                    alert("Files Uploaded!");
+                }
+            });*/
+        }
+        data = [];
+        function SendBtn(element) {
+            let text = document.getElementById("message").value;
+            let id = document.getElementById("BlogId").value;
+            let files = [];
+            for (let i = 0; i < data.length; i++) {
+                files.push(data[i].result);
+            }
+            document.getElementById('message').value = "";
+            data = [];
+            while (document.getElementById("photoplace").firstChild) {
+                document.getElementById("photoplace").removeChild(document.getElementById("photoplace").firstChild);
+            }
+            hubConnection.invoke("Create", text, id, files);
+        }
+        function fileUpload(element) {
+            var files = element.files;
+            var reader = new FileReader();
+            for (let i = 0; i != files.length; i++) {
+                reader.readAsDataURL(files[i]);
+                data.push(reader);
+            }
+            for (let i = 0, f; f = files[i]; i++) {
+                var fr = new FileReader();
+                fr.onload = (function (theFile) {
+                    return function (e) {
+                        let img = document.createElement('div');
+                        img.setAttribute('style', 'background-image:url(' + e.target.result + ');float:left; width:200px;height:200px;background-position:center center;background-size:cover');
+                        document.getElementById("photoplace").insertBefore(img, null);
+                    };
+                })(f);
+                fr.readAsDataURL(f);
+            }
+        }
+        hubConnection.on("FriendRequest", function (response) {
+            if (response == "Sended") {
+                let a = document.getElementById(idElem);
+                a.setAttribute("href", "##");
+                a.classList.toggle("btn-primary");
+                a.classList.toggle("btn-light");
+                a.innerHTML = "Запрос отправлен";
+                a.setAttribute("onclick", "sendRejectRequest(this)");
+            }
+            else {
+                if (response.type == "Recived") {
+                    let id = document.location.pathname;
+                    id = id.substr(19);
+                    if (id == response.id) {
+                        let a = document.getElementById(idElem);
+                        a.setAttribute("href", "javascript:void(0);");
+                        a.classList.toggle('btn-primary');
+                        a.classList.toggle('btn-light');
+                        a.innerHTML = "Добить в друзья";
+                        a.setAttribute("onclick", "sendAddToFriends(this)");
+                    }
+                }
+            }
+        });
+        hubConnection.on("RejectRequest", function (response) {
+            if (response.type == "Sended") {
+                let a = document.getElementById(idElem);
+                a.setAttribute("href", "javascript:void(0);");
+                a.classList.toggle('btn-light');
+                a.classList.toggle('btn-primary');
+                a.innerHTML = "Добавить в друзья";
+                a.setAttribute("onclick", "sendFriendRequest(this)");
+            }
+            if (response.type == "Recived") {
+                let id = document.location.pathname;
+                id = id.substr(19);
+                if (id = response.id) {
+                    let a = document.getElementById(idElem);
+                    a.setAttribute("href", "javascript:void(0);");
+                    a.classList.toggle('btn-light');
+                    a.classList.toggle('btn-primary');
+                    a.innerHTML = "Добавить в друзья";
+                    a.setAttribute("onclick", "sendFriendRequest(this)");
+                }
+            }
+        });
+        hubConnection.on("FriendAdded", function (response) {
+            if (response == "Accepted") {
+                let a = document.getElementById(idElem);
+                a.innerHTML = "Удалить из друзей";
+                a.setAttribute("onclick", "sendRejectFriendship(this)");
+            }
+            if (response.type == "Accepted") {
+                let id = document.location.pathname;
+                id = id.substr(19);
+                if (id = response.id) {
+                    let a = document.getElementById(id);
+                    a.innerHTML = "Удалить из друзей";
+                    a.setAttribute("onclick", "sendRejectFriendship(this)");
+                }
+            }
+        });
+        hubConnection.on("Publicated", function (response) {
+            if (document.getElementById("BlogId").value == response.id_блога) {
+                let postcol = document.createElement('div');
+                postcol.setAttribute('class', 'col-12');
+                postcol.setAttribute('style', 'background-color: #ffffff; border-radius: 4px; margin-bottom: 1rem');
+                let firstrow = document.createElement('div');
+                firstrow.setAttribute('class', 'row');
+                let secondrow = document.createElement('div');
+                secondrow.setAttribute('class', 'row');
+                let thirdrow = document.createElement('div');
+                thirdrow.setAttribute('class', 'row');
+                let fourthrow = document.createElement('div');
+                fourthrow.setAttribute('class', 'row');
+                let blogcol = document.createElement('div');
+                blogcol.setAttribute('class', 'col-12');
+                blogcol.setAttribute('style', 'background-color: #ffffff; border-radius: 4px; margin-bottom: 1rem');
+                let blogname = document.createElement('h6');
+                blogname.setAttribute('style', 'margin:0.4rem 1rem 0.4rem 1rem; font-size:12px; color:#4d5885');
+                blogname.innerHTML = response.блог;
+                let datetime = document.createElement('p');
+                datetime.setAttribute('style', 'margin:0.4rem 1rem 0.4rem 1rem; font-size: 10px');
+                datetime.innerHTML = response.дата_публикации;
+                blogcol.appendChild(blogname);
+                blogcol.appendChild(datetime);
+                let textcol = document.createElement('div');
+                textcol.setAttribute('class', 'col-12');
+                let text = document.createElement('p');
+                text.setAttribute('style', 'margin:0.4rem 1rem 0.4rem 1rem; font-size:12px');
+                text.innerHTML = response.текст;
+                textcol.appendChild(text);
+                let secondplusrow = document.createElement('div');
+                secondplusrow.setAttribute('class', 'row');
+                secondplusrow.innerHTML = '<div style="padding-left:30px" class="col-12"></div>';
+                if (response.приложения.length == 1) {
+                    for (let i = 0; i < response.приложения.length; i++) {
+                        secondplusrow.firstChild.innerHTML += '<img style="max-height:510px; max-width:510px; float:left;" src="data:image/jpeg;base64,' + response.приложения[i] + '" />';
+                    }
+                }
+                if (response.приложения.length == 2) {
+                    for (let i = 0; i < response.приложения.length; i++) {
+                        secondplusrow.firstChild.innerHTML += '<img style="max-height:510px; max-width:255px; float:left; margin-right:10px" src="data:image/jpeg;base64,' + response.приложения[i] + '" />';
+                    }
+                }
+                if (response.приложения.length == 3) {
+                    for (let i = 0; i < response.приложения.length; i++) {
+                        if (i == 0) {
+                            secondplusrow.firstChild.innerHTML += '<img style = "max-height:350px; max-width:255px; float:left; margin-right:10px" src = "data:image/jpeg;base64,' + response.приложения[i] + '" />';
+                        }
+                        else {
+                            secondplusrow.firstChild.innerHTML += '<img style = "max-height:175px; max-width:255px; float:left; margin-right:10px" src = "data:image/jpeg;base64,' + response.приложения[i] + '" />';
+                        }
+                    }
+                }
+                if (response.приложения.length > 3) {
+                    for (let i = 0; i < response.приложения.length; i++) {
+                        secondplusrow.firstChild.innerHTML += '<img style="max-height:200px; max-width:200px; float:left; margin-right:10px" src="data:image/jpeg;base64,' + response.приложения[i] + '" />';
+                    }
+                }
+                thirdrow.innerHTML = '<div class="col-1"></div><div class="col-10" style="margin-top:1rem;margin-bottom:1rem; border-bottom: 1px solid #adb2bc"><div class="col-1"></div></div>';
+                firstrow.appendChild(blogcol);
+                secondrow.appendChild(textcol);
+                let likecol = document.createElement('div');
+                likecol.setAttribute('class', 'col-2');
+                likecol.setAttribute('style', 'margin-left:1rem; padding: 0');
+                let likes = document.createElement('p');
+                likes.setAttribute('style', 'font-size:12px; margin-left: 1rem');
+                likes.innerHTML = '<svg onclick="addLike(this)" style="cursor:pointer" id="' + response.id_записи + '" width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-heart likesbtn" fill="#000000" xmlns="http://www.w3.org/2000/svg">' +
+                    '<path fill-rule="evenodd" d="M8 2.748l-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143c.06.055.119.112.176.171a3.12 3.12 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15z" />' +
+                    '</svg>' + ' ' + response.лайки;
+                let comments = document.createElement('p');
+                let comentcol = document.createElement('div');
+                likecol.appendChild(likes);
+                comentcol.setAttribute('class', 'col-2');
+                comentcol.setAttribute('style', 'padding: 0');
+                comments.setAttribute('id', response.id_записи);
+                comments.setAttribute('style', 'font-size:12px; margin-left: 1rem');
+                comments.innerHTML = ' <svg onclick="getPostComents(this)" style="cursor: pointer" width="1em" height="1em" viewBox="0 0 16 16" class="comentbtn bi bi-chat-square" fill="currentColor" xmlns="http://www.w3.org/2000/svg">' +
+                    '<path fill-rule="evenodd" d="M14 1H2a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h2.5a2 2 0 0 1 1.6.8L8 14.333 9.9 11.8a2 2 0 0 1 1.6-.8H14a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM2 0a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2.5a1 1 0 0 1 .8.4l1.9 2.533a1 1 0 0 0 1.6 0l1.9-2.533a1 1 0 0 1 .8-.4H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z" />' +
+                    '</svg>' + ' ' + response.коментарии;
+                comentcol.appendChild(comments);
+                let buffcol = document.createElement('div');
+                buffcol.setAttribute('class', 'col-5');
+                let viewcol = document.createElement('div');
+                viewcol.setAttribute('class', 'col-2');
+                let views = document.createElement('p');
+                views.setAttribute('style', 'font-size:12px; margin-left: 1rem');
+                views.innerHTML = '<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-eye-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d = "M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z" /><path fill-rule="evenodd" d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" /></svg >' +
+                    ' ' + 1;
+                viewcol.appendChild(views);
+                fourthrow.appendChild(likecol);
+                fourthrow.appendChild(comentcol);
+                fourthrow.appendChild(buffcol);
+                fourthrow.appendChild(viewcol);
+                postcol.appendChild(firstrow);
+                postcol.appendChild(secondrow);
+                postcol.appendChild(secondplusrow);
+                postcol.appendChild(thirdrow);
+                postcol.appendChild(fourthrow);
+                let postrow = document.createElement('div');
+                postrow.setAttribute('class', 'row');
+                postrow.appendChild(postcol);
+                let firstElem;
+                if (document.getElementById("add_new_post")) {
+                    firstElem = document.getElementById("add_new_post");
+                }
+                else {
+                    firstElem = document.getElementById("user_personal_info");
+                }
+                document.getElementById("posts_and_other_div").insertBefore(postrow, firstElem.nextElementSibling);
+            }
+        });
+        hubConnection.on("FriendshipRejected", function (response) {
+            if (response == "Rejected") {
+                let a = document.getElementById(idElem);
+                a.classList.toggle('btn-light');
+                a.classList.toggle('btn-primary');
+                a.innerHTML = "Добавить в друзья";
+                a.setAttribute("onclick", "sendFriendRequest(this)");
+            }
+            if (response.type = "Rejected") {
+                let id = document.location.pathname;
+                id = id.substr(19);
+                if (id = response.id) {
+                    let a = document.getElementById(id);
+                    a.classList.toggle('btn-light');
+                    a.classList.toggle('btn-primary');
+                    a.innerHTML = "Добавить в друзья";
+                    a.setAttribute("onclick", "sendFriendRequest(this)");
+                }
+            }
+        });
+        hubConnection.on("PostDeleted", function (response) {
+            if (response.action) {
+                let button = document.getElementById(response.id_post).parentNode.parentNode.parentNode.parentNode.firstElementChild.lastElementChild.lastElementChild;
+                if (response.action == 2)
+                    button.innerText = "Восстановить";
+                else
+                    button.innerText = "Удалить"
+            }
+            else {
+                if (document.getElementById(response.id_post)) {
+                    let post_element = document.getElementById(response.id_post).parentNode.parentNode.parentNode.parentNode;
+                    post_element.parentNode.removeChild(post_element);
+                }
+            }
+        });
+        document.addEventListener("DOMContentLoaded", function (event) {
+            if (document.getElementById("message")) {
+                $("#message").summernote({
+                    toolbar: [
+                    ]
+                });
+            }
+        });
+        hubConnection.on("CommentAdded", function (response) {
+            if (document.getElementById("PostContent")) {
+                if (document.getElementById(response.id_post)) {
+                    let comments_block = document.getElementById("comments_block");
+                    let comment_div = document.createElement('div');
+                    comment_div.setAttribute('style', "border-bottom: 1px solid #adb2bc; margin-left:1rem; margin-right:1rem;margin-bottom:0.4rem");
+                    comment_div.setAttribute('class', 'row');
+                    let comment_col12 = document.createElement('div');
+                    comment_col12.setAttribute('class', 'col-12');
+                    let comment_text = document.createElement('p');
+                    comment_text.setAttribute('style', "font-size: 12px; color: #4d5885; padding:0; margin:0; margin-top: 0.4rem;");
+                    comment_text.innerHTML = response.user_name + " " + response.user_second_name;
+                    let comment_user_info = document.createElement('p');
+                    comment_user_info.setAttribute('style', "font-size: 12px");
+                    comment_user_info.innerHTML = response.text;
+                    comment_col12.appendChild(comment_text);
+                    comment_col12.appendChild(comment_user_info);
+                    comment_div.appendChild(comment_col12);
+                    comments_block.insertBefore(comment_div, comments_block.firstChild);
+                    if (response.scroll_y) {
+                        document.documentElement.scrollTo(scroll_y);
+                    }
+                }
+            }
+            let comments_count_p = document.getElementById(response.id_post).parentNode.parentNode.nextElementSibling.firstElementChild;
+            if (comments_count_p) {
+                let text = comments_count_p.firstElementChild.nextSibling;
+                let count_comments = parseInt(text.data);
+                count_comments++;
+                text.data = count_comments;
+            }
+        });
+        /*document.getElementById("SendBtn").addEventListener("click", function (event) {
+            let text =
         });*/
-    }
-</script>
+        function sendRejectRequest(element) {
+            let friendId = element.id;
+            idElem = element.id;
+            hubConnection.invoke("RejectRequest", friendId);
+        }
+        function sendFriendRequest(element) {
+            let friendId = element.id;
+            idElem = element.id;
+            hubConnection.invoke("SendFriendRequest", friendId);
+        }
+        function sendAddToFriends(element) {
+            let friendId = element.id;
+            idElem = element.id;
+            hubConnection.invoke("AddToFriends", friendId);
+        }
+        function sendRejectFriendship(element) {
+            let friendId = element.id;
+            idElem = element.id;
+            hubConnection.invoke("RejectFriendship", friendId);
+        }
+        function addLike(element) {
+            var data = { id: element.id };
+            var request = new XMLHttpRequest();
+            function reqReadyStateChanche() {
+                if (request.readyState == 4 && request.status == 200) {
+                    let reqstrings = request.responseText.split(";");
+                    let pelem = element.parentNode;
+                    while (pelem.firstChild)
+                        pelem.removeChild(pelem.firstChild);
+                    if (reqstrings[0] == "add") {
+                        pelem.innerHTML = '<svg onclick="addLike(this)" style="cursor:pointer" id="' + data.id + '" width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-heart likesbtn" fill="#ff0000" xmlns="http://www.w3.org/2000/svg">' +
+                            '<path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/>' +
+                            '</svg> ' + reqstrings[1];
+                    }
+                    else {
+                        pelem.innerHTML = '<svg onclick="addLike(this)" style="cursor:pointer" id="' + data.id + '" width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-heart likesbtn" fill="#000000" xmlns="http://www.w3.org/2000/svg">' +
+                            '<path fill-rule="evenodd" d="M8 2.748l-.717-.737C5.6.281 2.514.878 1.4 3.053c-.523 1.023-.641 2.5.314 4.385.92 1.815 2.834 3.989 6.286 6.357 3.452-2.368 5.365-4.542 6.286-6.357.955-1.886.838-3.362.314-4.385C13.486.878 10.4.28 8.717 2.01L8 2.748zM8 15C-7.333 4.868 3.279-3.04 7.824 1.143c.06.055.119.112.176.171a3.12 3.12 0 0 1 .176-.17C12.72-3.042 23.333 4.867 8 15z" />' +
+                            '</svg> ' + reqstrings[1];
+                    }
+                }
+            }
+            var body = "id=" + data.id;
+            request.open("POST", "/Home/LikeAdd");
+            request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            request.onreadystatechange = reqReadyStateChanche;
+            request.send(body);
+        }
+        function closeDetail(element) {
+            let postBanner = document.getElementById('PostBanner');
+            let postContent = document.getElementById('PostContent');
+            postBanner.parentElement.removeChild(postBanner);
+            postContent.parentElement.removeChild(postContent);
+            document.body.style.overflowY = "scroll";
+        }
+        function addComent(element) {
+            let text = element.parentNode.previousSibling.firstChild.value;
+            let id = element.id;
+            hubConnection.invoke("AddComment", id, text);
+        }
+        function getPostComents(element) {
+            let data = { id: element.parentNode.id };
+            let request = new XMLHttpRequest();
+            function reqReadyStateChanche() {
+                if (request.readyState == 4 && request.status == 200) {
+                    let response = request.responseText;
+                    scroll_y = document.documentElement.scrollTop;
+                    let div = document.getElementById('maindiv');
+                    div.innerHTML = div.innerHTML + response;
+                    let Commentsdiv = document.getElementById('contentRow');
+                    Commentsdiv.style.maxHeight = document.documentElement.clientHeight + "px";
+                    document.body.style.overflowY = "hidden";
+                }
+            }
+            let body = "id=" + data.id;
+            request.open("POST", "/Home/GetPostComents");
+            request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            request.onreadystatechange = reqReadyStateChanche;
+            request.send(body);
+        }
+        function deletePost(element) {
+            let id_post = element.name;
+            hubConnection.invoke("DeletePost", id_post);
+        }
+    </script>
+}

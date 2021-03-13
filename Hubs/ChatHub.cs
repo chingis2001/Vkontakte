@@ -25,10 +25,13 @@ namespace Vkontakte.Hubs
         public async Task Create(string? text, string? BlogId, IList<string> files)
         {
             var attachments = new List<byte[]>();
+            var stringattachments = new List<string>();
             foreach (var data in files) 
             {
-                var suka = data.Substring(23);
-                attachments.Add(Convert.FromBase64String(data.Substring(23)));
+                var hernya = data.Split(',');
+                var suka = hernya[1];
+                stringattachments.Add(hernya[1]);
+                attachments.Add(Convert.FromBase64String(suka));
             }
             var UserName = Context.User.Identity.Name;
             Блог блог = _context.Блог.Find(Guid.Parse(BlogId));
@@ -61,20 +64,18 @@ namespace Vkontakte.Hubs
                 _context.Add(приложение);
             }
             _context.SaveChanges();
-            foreach (var item in подписчики) 
+            await Clients.All.SendAsync("Publicated", new
             {
-                await Clients.User(item).SendAsync("Publicated", new
-                {
-                    id_блога = блог.ID_Блога,
-                    id_записи = запись.ID_Записи,
-                    блог = блог.Название,
-                    запись = запись.Название,
-                    лайки = 0,
-                    коментарии = 0,
-                    дата_публикации = запись.Дата_публикации.ToLocalTime(),
-                    текст = запись.Текст
-                });
-            }
+                id_блога = блог.ID_Блога,
+                id_записи = запись.ID_Записи,
+                блог = блог.Название,
+                запись = запись.Название,
+                лайки = 0,
+                коментарии = 0,
+                дата_публикации = запись.Дата_публикации.ToLocalTime(),
+                текст = запись.Текст,
+                приложения = stringattachments,
+            });
         }
         public async Task SendFriendRequest(string? idFriend)
         {
@@ -107,6 +108,39 @@ namespace Vkontakte.Hubs
                 type = "Recived",
             });
         }
+        public async Task RejectRequest(string? idFriend) 
+        {
+            var UserName = Context.User.Identity.Name;
+            Guid FriendID = Guid.Parse(idFriend);
+            Guid UserID = Guid.Parse(UserName);
+            Дружба дружба1 = new Дружба()
+            {
+                ID_Пользователя = UserID,
+                ID_Друга = FriendID,
+                Дата_изиенения_статуса = DateTime.Now,
+                Код_статуса = 9,
+            };
+            Дружба дружба2 = new Дружба()
+            {
+                ID_Пользователя = FriendID,
+                ID_Друга = UserID,
+                Дата_изиенения_статуса = DateTime.Now,
+                Код_статуса = 9,
+            };
+            _context.Дружба.Add(дружба1);
+            _context.Дружба.Add(дружба2);
+            _context.SaveChanges();
+            await Clients.User(UserName.ToLower()).SendAsync("RejectRequest", new
+            {
+                id = FriendID.ToString().ToLower(),
+                type = "Sended",
+            });
+            await Clients.User(idFriend.ToLower()).SendAsync("RejectRequest", new
+            {
+                id = UserName.ToLower(),
+                type = "Recived"
+            });
+        }
         public async Task AddToFriends(string? idFriend) 
         {
             var UserName = Context.User.Identity.Name;
@@ -136,6 +170,53 @@ namespace Vkontakte.Hubs
                 secondname = пользователь.Фамилия,
                 city = пользователь.Город,
                 type = "Accepted",
+            });
+        }
+        public async Task RejectFriendship(string? idFriend) 
+        {
+            var UserName = Context.User.Identity.Name;
+            Дружба дружба = new Дружба
+            {
+                ID_Друга = Guid.Parse(idFriend),
+                ID_Пользователя = Guid.Parse(UserName),
+                Дата_изиенения_статуса = DateTime.Now,
+                Код_статуса = 3
+            };
+            Дружба дружба1 = new Дружба
+            {
+                ID_Друга = Guid.Parse(UserName),
+                ID_Пользователя = Guid.Parse(idFriend),
+                Дата_изиенения_статуса = DateTime.Now,
+                Код_статуса = 3
+            };
+            _context.Add(дружба);
+            _context.Add(дружба1);
+            дружба = new Дружба
+            {
+                ID_Друга = Guid.Parse(idFriend),
+                ID_Пользователя = Guid.Parse(UserName),
+                Дата_изиенения_статуса = DateTime.Now,
+                Код_статуса = 9
+            };
+            дружба1 = new Дружба
+            {
+                ID_Друга = Guid.Parse(UserName),
+                ID_Пользователя = Guid.Parse(idFriend),
+                Дата_изиенения_статуса = DateTime.Now,
+                Код_статуса = 9
+            };
+            _context.Add(дружба);
+            _context.Add(дружба1);
+            _context.SaveChanges();
+            Пользователь пользователь = _context.Пользователь.Find(Guid.Parse(UserName));
+            await Clients.User(UserName.ToLower()).SendAsync("FriendshipRejected", "Rejected");
+            await Clients.User(idFriend.ToLower()).SendAsync("FriendshipRejected", new
+            {
+                id = UserName.ToLower(),
+                firstname = пользователь.Имя,
+                secondname = пользователь.Фамилия,
+                city = пользователь.Город,
+                type = "Rejected",
             });
         }
         public async Task SendMessage(string? id, string? text = "", string? friendid = "") 
@@ -226,17 +307,37 @@ namespace Vkontakte.Hubs
                     {
                         var covertantId = members.FirstOrDefault(t => t.ID_Пользователя != item.ID_Пользователя).ID_Пользователя;
                         var covertant = _context.Пользователь.FirstOrDefault(t => t.ID == covertantId);
-                        await Clients.User(item.ID_Пользователя.ToString().ToLower()).SendAsync("MessageSend", new
+                        if (item.ID_Пользователя.ToString().ToLower() == UserName.ToLower())
                         {
-                            user_send = сообщение.ID_Пользователя,
-                            conv_id = сообщение.ID_беседы,
-                            conv_name = covertant.Фамилия + " " + covertant.Имя,
-                            conv_user_id = covertant.ID,
-                            date = сообщение.Дата_отправки.ToLongDateString(),
-                            text = сообщение.Текст_сообщения,
-                            firstname = пользователь.Имя,
-                            secondname = пользователь.Фамилия
-                        });
+                            await Clients.User(item.ID_Пользователя.ToString().ToLower()).SendAsync("MessageSend", new
+                            {
+                                flag = 1,
+                                user_send = сообщение.ID_Пользователя,
+                                conv_id = сообщение.ID_беседы,
+                                conv_name = covertant.Фамилия + " " + covertant.Имя,
+                                conv_user_id = covertant.ID,
+                                date = сообщение.Дата_отправки.ToLongDateString(),
+                                time = сообщение.Дата_отправки.Hour + ":" + сообщение.Дата_отправки.Minute,
+                                text = сообщение.Текст_сообщения,
+                                firstname = пользователь.Имя,
+                                secondname = пользователь.Фамилия
+                            });
+                        }
+                        else 
+                        {
+                            await Clients.User(item.ID_Пользователя.ToString().ToLower()).SendAsync("MessageSend", new
+                            {
+                                user_send = сообщение.ID_Пользователя,
+                                conv_id = сообщение.ID_беседы,
+                                conv_name = covertant.Фамилия + " " + covertant.Имя,
+                                conv_user_id = covertant.ID,
+                                date = сообщение.Дата_отправки.ToLongDateString(),
+                                time = сообщение.Дата_отправки.Hour + ":" + сообщение.Дата_отправки.Minute,
+                                text = сообщение.Текст_сообщения,
+                                firstname = пользователь.Имя,
+                                secondname = пользователь.Фамилия
+                            });
+                        }
                     }
                 }
                 else 
@@ -253,6 +354,7 @@ namespace Vkontakte.Hubs
                             conv_name = covertant.Фамилия + " " + covertant.Имя,
                             conv_user_id = covertant.ID,
                             date = сообщение.Дата_отправки.ToLongDateString(),
+                            time = сообщение.Дата_отправки.Hour + ":" + сообщение.Дата_отправки.Minute,
                             text = сообщение.Текст_сообщения,
                             firstname = пользователь.Имя,
                             secondname = пользователь.Фамилия
@@ -260,6 +362,60 @@ namespace Vkontakte.Hubs
                     }
                 }
             }            
+        }
+
+        public async Task AddComment(string? id, string? text="") 
+        {
+            var UserName = Context.User.Identity.Name;
+            Коментарий коментарий = new Коментарий()
+            {
+                ID_коментария = Guid.NewGuid(),
+                ID_Записи = Guid.Parse(id),
+                ID_Пользователя = Guid.Parse(UserName),
+                Текст_коментария = text,
+                Дата_коментария = DateTime.Now
+            };
+            _context.Add(коментарий);
+            Блог блог = (from запись in _context.Запись
+                               join блог_таблица in _context.Блог
+                               on запись.ID_Блога equals блог_таблица.ID_Блога
+                               where запись.ID_Записи == Guid.Parse(id)
+                               select блог_таблица).ToList().First();
+            Пользователь пользователь = _context.Пользователь.Find(Guid.Parse(UserName));
+            List<string> подписчики = _context.Подписчик.Where(t => t.ID_Блога == блог.ID_Блога)
+                .Select(t => t.ID_Пользователя.ToString().ToLower())
+                .ToList();
+            _context.SaveChanges();
+            await Clients.All.SendAsync("CommentAdded", new
+            {
+                id = коментарий.ID_коментария,
+                id_post = коментарий.ID_Записи,
+                text = коментарий.Текст_коментария,
+                user_name = пользователь.Имя,
+                user_second_name = пользователь.Фамилия
+            });
+        }
+
+        public async Task DeletePost(string? id) 
+        {
+            var UserName = Context.User.Identity.Name;
+            Запись запись = _context.Запись.Find(Guid.Parse(id));
+            if (запись.Удалён == 0)
+                запись.Удалён = 1;
+            else
+                if (запись.Удалён == 1)
+                    запись.Удалён = 0;
+            _context.Update(запись);
+            _context.SaveChanges();
+            await Clients.Others.SendAsync("PostDeleted", new
+            {
+                id_post = запись.ID_Записи
+            });
+            await Clients.Caller.SendAsync("PostDeleted", new
+            {
+                id_post = запись.ID_Записи,
+                action = запись.Удалён + 1
+            });
         }
     }
 }

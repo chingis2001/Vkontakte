@@ -46,184 +46,187 @@
 </div>
 @section Additional
 {
-    <div class="row" style="margin-left:0.4rem">
-        <div class="col-12" style="background-color: #ffffff; border-radius: 4px;">
-            <div class="row" style="margin-top:0.4rem">
-                <div class="col-12">
-                    <p style="font-size:12px; margin-bottom:0.4rem">
-                        <a asp-controller="Blogs" asp-action="PublicsList">Мои сообщества</a>
-                    </p>
+    <div class="col-3">
+        <div class="row" style="margin-left:0.4rem">
+            <div class="col-12" style="background-color: #ffffff; border-radius: 4px;">
+                <div class="row" style="margin-top:0.4rem">
+                    <div class="col-12">
+                        <p style="font-size:14px; margin-bottom:0.4rem">
+                            <a asp-controller="Blogs" asp-action="PublicsList">Мои сообщества</a>
+                        </p>
+                    </div>
                 </div>
-            </div>
-            <div class="row" style="margin-top:0.4rem; margin-bottom: 0.4rem">
-                <div class="col-12">
-                    <p style="font-size:12px; margin-bottom:0.4rem">
-                        <a asp-controller="Blogs" asp-action="FindCommunity">Поиск сообществ</a>
-                    </p>
+                <div class="row" style="margin-top:0.4rem; margin-bottom: 0.4rem">
+                    <div class="col-12">
+                        <p style="font-size:14px; margin-bottom:0.4rem">
+                            <a asp-controller="Blogs" asp-action="FindCommunity">Поиск сообществ</a>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="row" style="margin-left: 0.4rem; margin-top: 1rem">
-        <div class="col-12" style="background-color: #ffffff; border-radius: 4px;">
-            <div class="row" style="margin-top:0.4rem">
-                <div class="col-12">
-                    <p style="font-size:12px; margin-bottom:0.4rem">
-                        Тематика
-                    </p>
-                    <p style="font-size: 12px; margin-bottom:0.4rem">
-                        <select style="font-size:12px" id="topicSelect" class="form-control">
-                            @foreach (var item in ViewBag.Topics)
-                            {
-                                <option value="@item">@item</option>
-                            }
-                        </select>
-                    </p>
+        <div class="row" style="margin-left: 0.4rem; margin-top: 1rem">
+            <div class="col-12" style="background-color: #ffffff; border-radius: 4px;">
+                <div class="row" style="margin-top: 0.4rem">
+                    <div class="col-12">
+                        <p style="font-size: 14px; margin-bottom: 0.4rem">
+                            Тематика
+                        </p>
+                        <p style="font-size: 14px; margin-bottom: 0.4rem">
+                            <select style="font-size:12px" id="topicSelect" class="form-control">
+                                @foreach (var item in ViewBag.Topics)
+                                {
+                                    <option value="@item">@item</option>
+                                }
+                            </select>
+                        </p>
+                    </div>
                 </div>
-                <div class="col-12">
-                    <p style="font-size:12px; margin-bottom:0.4rem">
-                        Порядок отображения
-                    </p>
-                    <p style="font-size: 12px; margin-bottom:0.4rem">
-                        <select id="orderSelect" style="font-size:12px" class="form-control">
-                            <option value="@Vkontakte.Models.BlogSortState.FollowersAsc">По количество подписчиков возростание</option>
-                            <option value="@Vkontakte.Models.BlogSortState.FollowersDesc">По количество подписчиков убывание</option>
-                            <option selected="selected" value="@Vkontakte.Models.BlogSortState.Default">По умолчанию</option>
-                        </select>
-                    </p>
+                <div class="row">
+                    <div class="col-12">
+                        <p style="font-size:14px; margin-bottom:0.4rem">
+                            Порядок отображения
+                        </p>
+                        <p style="font-size: 14px; margin-bottom:0.4rem">
+                            <select id="orderSelect" style="font-size:14px" class="form-control">
+                                <option value="@Vkontakte.Models.BlogSortState.FollowersAsc">По количество подписчиков возростание</option>
+                                <option value="@Vkontakte.Models.BlogSortState.FollowersDesc">По количество подписчиков убывание</option>
+                                <option selected="selected" value="@Vkontakte.Models.BlogSortState.Default">По умолчанию</option>
+                            </select>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 }
-<script>
-    let Request = function (data)
-    {
-        let request = new XMLHttpRequest();
-        function reqReadyStateChange() {
-            if (request.readyState == 4 && request.status == 200) {
-                page = page + 1;
-                response = JSON.parse(request.responseText);
-                let bloglist = document.getElementById("blogslist").firstChild;
-                for (let i = 0; i < response.length; i++) {
-                    let row = document.createElement('div');
-                    row.setAttribute('class', 'row');
-                    row.setAttribute('style', 'margin-bottom: 1rem; border-bottom: 1px solid #f1f1f4');
-                    let col8 = document.createElement('div');
-                    col8.setAttribute('class', 'col-8');
-                    col8.setAttribute('style', 'margin-bottom:1rem');
-                    col8.innerHTML = '<p style="margin-bottom:0">' + '<a href="/Blogs/BlogPosts/' + response[i].id + '">' + response[i].блог + '</a>' + '</p>' +
-                        '<p style="margin-bottom:0; font-size:12px">' + response[i].тематика + '</p>' +
-                        '<p style="margin-bottom:0; font-size:12px">' + response[i].подписчики + 'подписчиков' + '</p>';
-                    let col4 = document.createElement('div');
-                    col4.setAttribute('class', 'col-4');
-                    col4.setAttribute('style', 'margin-bottom:1rem');
-                    let p = document.createElement('p');
-                    p.setAttribute('style', 'margin-bottom:0; margin-top:1rem');
-                    let a = document.createElement('a');
-                    a.setAttribute('style', 'font-size:12px');
-                    a.setAttribute('href', '##');
-                    a.setAttribute('class', 'btn btn-primary');
-                    a.setAttribute('id', response[i].id);
-                    a.innerHTML = 'Подписаться';
-                    a.addEventListener('click', function (event) {
-                        event.preventDefault();
-                        let btn = event.target;
-                        let data = { id: btn.id };
-                        subscribe(event.target, data);
-                    });
-                    p.appendChild(a);
-                    col4.appendChild(p);
-                    row.appendChild(col8);
-                    row.appendChild(col4);
-                    bloglist.appendChild(row);
+@section Scripts{ 
+    <script>
+        let Request = function (data) {
+            let request = new XMLHttpRequest();
+            function reqReadyStateChange() {
+                if (request.readyState == 4 && request.status == 200) {
+                    page = page + 1;
+                    response = JSON.parse(request.responseText);
+                    let bloglist = document.getElementById("blogslist").firstChild;
+                    for (let i = 0; i < response.length; i++) {
+                        let row = document.createElement('div');
+                        row.setAttribute('class', 'row');
+                        row.setAttribute('style', 'margin-bottom: 1rem; border-bottom: 1px solid #f1f1f4');
+                        let col8 = document.createElement('div');
+                        col8.setAttribute('class', 'col-8');
+                        col8.setAttribute('style', 'margin-bottom:1rem');
+                        col8.innerHTML = '<p style="margin-bottom:0">' + '<a href="/Blogs/BlogPosts/' + response[i].id + '">' + response[i].блог + '</a>' + '</p>' +
+                            '<p style="margin-bottom:0; font-size:12px">' + response[i].тематика + '</p>' +
+                            '<p style="margin-bottom:0; font-size:12px">' + response[i].подписчики + ' подписчиков' + '</p>';
+                        let col4 = document.createElement('div');
+                        col4.setAttribute('class', 'col-4');
+                        col4.setAttribute('style', 'margin-bottom:1rem');
+                        let p = document.createElement('p');
+                        p.setAttribute('style', 'margin-bottom:0; margin-top:1rem');
+                        let a = document.createElement('a');
+                        a.setAttribute('style', 'font-size:12px');
+                        a.setAttribute('href', '##');
+                        a.setAttribute('class', 'btn btn-primary');
+                        a.setAttribute('id', response[i].id);
+                        a.innerHTML = 'Подписаться';
+                        a.addEventListener('click', function (event) {
+                            event.preventDefault();
+                            let btn = event.target;
+                            let data = { id: btn.id };
+                            subscribe(event.target, data);
+                        });
+                        p.appendChild(a);
+                        col4.appendChild(p);
+                        row.appendChild(col8);
+                        row.appendChild(col4);
+                        bloglist.appendChild(row);
+                    }
                 }
             }
+            body = "page=" + data.page + "&topic=" + data.topic + "&pattern=" + data.pattern + "&sortState=" + data.sortState;
+            request.open("POST", "/Blogs/FilterPaginateOrderCommunityJson");
+            request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            request.onreadystatechange = reqReadyStateChange;
+            request.send(body);
         }
-        body = "page=" + data.page + "&topic=" + data.topic + "&pattern=" + data.pattern + "&sortState=" + data.sortState;
-        request.open("POST", "/Blogs/FilterPaginateOrderCommunityJson");
-        request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        request.onreadystatechange = reqReadyStateChange;
-        request.send(body);
-    }
-    let subscribe = function (element, data) {
-        let request = new XMLHttpRequest();
-        function reqReadyStateChange() {
-            if (request.readyState == 4 && request.status == 200) {
-                let response = JSON.parse(request.responseText);
-                let a = element;
-                if (response.action == "subscribe") {
-                    a.classList.toggle('btn-primary');
-                    a.classList.toggle('btn-light');
-                    a.innerText = "Вы подписанны";
-                }
-                else {
-                    a.classList.toggle('btn-primary');
-                    a.classList.toggle('btn-light');
-                    a.innerText = "Подписаться";
+        let subscribe = function (element, data) {
+            let request = new XMLHttpRequest();
+            function reqReadyStateChange() {
+                if (request.readyState == 4 && request.status == 200) {
+                    let response = JSON.parse(request.responseText);
+                    let a = element;
+                    if (response.action == "subscribe") {
+                        a.classList.toggle('btn-primary');
+                        a.classList.toggle('btn-light');
+                        a.innerText = "Вы подписанны";
+                    }
+                    else {
+                        a.classList.toggle('btn-primary');
+                        a.classList.toggle('btn-light');
+                        a.innerText = "Подписаться";
+                    }
                 }
             }
+            body = "id=" + data.id;
+            request.open("POST", "/Blogs/Subscribe");
+            request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            request.onreadystatechange = reqReadyStateChange;
+            request.send(body);
         }
-        body = "id=" + data.id;
-        request.open("POST", "/Blogs/Subscribe");
-        request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        request.onreadystatechange = reqReadyStateChange;
-        request.send(body);
-    }
-    let page = 1;
-    let topic = "";
-    let pattern = "";
-    let sortState = null;
-    onscroll = function () {
-        if (window.scrollY + 1 >= document.documentElement.scrollHeight - document.documentElement.clientHeight)
-        {
+        let page = 1;
+        let topic = "";
+        let pattern = "";
+        let sortState = null;
+        onscroll = function () {
+            if (window.scrollY + 1 >= document.documentElement.scrollHeight - document.documentElement.clientHeight) {
+                let data = { page: page, topic: topic, pattern: pattern, sortState: sortState };
+                Request(data)
+            }
+        };
+        let subscription = document.getElementsByClassName("subscription");
+        for (let i = 0; i < subscription.length; i++) {
+            subscription[i].addEventListener("click", function (event) {
+                event.preventDefault();
+                let btn = event.target;
+                let data = { id: btn.id };
+                subscribe(event.target, data);
+            });
+        }
+        let SearchBtn = document.getElementById('FindByName');
+        SearchBtn.addEventListener('input', function (event) {
+            pattern = event.target.value;
+            page = 0;
             let data = { page: page, topic: topic, pattern: pattern, sortState: sortState };
+            let bloglist = document.getElementById("blogslist").firstChild;
+            while (bloglist.firstChild) {
+                bloglist.removeChild(bloglist.firstChild)
+            }
             Request(data)
-        }
-    };
-    let subscription = document.getElementsByClassName("subscription");
-    for (let i = 0; i < subscription.length; i++)
-    {
-        subscription[i].addEventListener("click", function (event) {
-            event.preventDefault();
-            let btn = event.target;
-            let data = { id: btn.id };
-            subscribe(event.target, data);
         });
-    }
-    let SearchBtn = document.getElementById('FindByName');
-    SearchBtn.addEventListener('input', function (event) {
-        pattern = event.target.value;
-        page = 0;
-        let data = { page: page, topic: topic, pattern: pattern, sortState: sortState };
-        let bloglist = document.getElementById("blogslist").firstChild;
-        while (bloglist.firstChild) {
-            bloglist.removeChild(bloglist.firstChild)
-        }
-        Request(data)
-    });
-    document.addEventListener("DOMContentLoaded", function (event) {
-        let orderBtn = document.getElementById('orderSelect');
-        orderBtn.addEventListener("change", function (event) {
-            page = 0;
-            sortState = event.target.value;
-            let data = { page: page, topic: topic, pattern: pattern, sortState: sortState };
-            let bloglist = document.getElementById("blogslist").firstChild;
-            while (bloglist.firstChild) {
-                bloglist.removeChild(bloglist.firstChild)
-            }
-            Request(data);
+        document.addEventListener("DOMContentLoaded", function (event) {
+            let orderBtn = document.getElementById('orderSelect');
+            orderBtn.addEventListener("change", function (event) {
+                page = 0;
+                sortState = event.target.value;
+                let data = { page: page, topic: topic, pattern: pattern, sortState: sortState };
+                let bloglist = document.getElementById("blogslist").firstChild;
+                while (bloglist.firstChild) {
+                    bloglist.removeChild(bloglist.firstChild)
+                }
+                Request(data);
+            });
+            let selectBtn = document.getElementById('topicSelect');
+            selectBtn.addEventListener("change", function (event) {
+                page = 0;
+                topic = event.target.value;
+                let data = { page: page, topic: topic, pattern: pattern, sortState: sortState };
+                let bloglist = document.getElementById("blogslist").firstChild;
+                while (bloglist.firstChild) {
+                    bloglist.removeChild(bloglist.firstChild)
+                }
+                Request(data);
+            });
         });
-        let selectBtn = document.getElementById('topicSelect');
-        selectBtn.addEventListener("change", function (event) {
-            page = 0;
-            topic = event.target.value;
-            let data = { page: page, topic: topic, pattern: pattern, sortState: sortState };
-            let bloglist = document.getElementById("blogslist").firstChild;
-            while (bloglist.firstChild) {
-                bloglist.removeChild(bloglist.firstChild)
-            }
-            Request(data);
-        });
-    });
-</script>
+    </script>
+}

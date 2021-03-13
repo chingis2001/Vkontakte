@@ -82,6 +82,15 @@ namespace Vkontakte.Controllers
             Беседа беседа = _context.Беседа.Include(t => t.Участники).FirstOrDefault(t => t.ID_Беседы == Id);
             Сообщения = _context.Сообщения.Include(t => t.Участник).Where(t => t.ID_беседы == Id).OrderBy(t => t.Дата_отправки).Take(100).ToList();
             bool isForCurrentUser = false;
+            /*if (беседа == null) 
+            {
+                var Id_бесед = _context.Участник.Where(t => t.ID_Пользователя == Id).Select(t => t.ID_беседы).ToList();
+                List<Беседа> беседы_личные = new List<Беседа>();
+                foreach (var idшка in Id_бесед) 
+                {
+                    беседы_личные
+                }
+            }*/
             foreach (var item in беседа.Участники) 
             {
                 Пользователи.Add(_context.Пользователь.FirstOrDefault(t => t.ID == item.ID_Пользователя));

@@ -30,7 +30,6 @@ namespace Vkontakte.Controllers
             _trends = trends;
             this.hubContext = hubContext;
         }
-
         public IActionResult Index(int page = 0)
         {
             int pagesize = 10;
@@ -39,7 +38,7 @@ namespace Vkontakte.Controllers
             List<Запись> записи = (from запись in _context.Запись.Include(t => t.Блог).Include(t => t.Действия).Include(t => t.Коментарии)
                                    join блог in _context.Блог on запись.ID_Блога equals блог.ID_Блога
                                    join подписчик in _context.Подписчик on блог.ID_Блога equals подписчик.ID_Блога
-                                   where подписчик.ID_Пользователя == Id
+                                   where подписчик.ID_Пользователя == Id && запись.Удалён == 0
                                    select запись).OrderByDescending(t => t.Дата_публикации).Skip(page * pagesize).Take(pagesize).ToList();
             foreach (var post in записи) 
             {
@@ -60,14 +59,16 @@ namespace Vkontakte.Controllers
             }
             if (page != 0)
                 return PartialView("_Post", postBlogCommentActionViewModels);
+            var gtf = postBlogCommentActionViewModels[0].Запись.Текст.Split("<br>");
             return View(postBlogCommentActionViewModels);
         }
+        [AllowAnonymous]
         public IActionResult GetTrends(int page = 0) 
         {
             int pagesize = 10;
             var trendPosts = _trends.GetTrends(_context);
             List<PostBlogCommentActionViewModel> postBlogCommentActionViewModels = new List<PostBlogCommentActionViewModel>();
-            List<Запись> записи = (from запись in _context.Запись.Include(t => t.Блог).Include(t => t.Действия).Include(t => t.Коментарии).ToList()
+            List<Запись> записи = (from запись in _context.Запись.Include(t => t.Блог).Include(t => t.Действия).Include(t => t.Коментарии).Where(t => t.Удалён == 0).ToList()
                                    join тренды in trendPosts on запись.ID_Записи equals тренды.ID
                                    select запись).OrderByDescending(t => t.Дата_публикации).Skip(page * pagesize).Take(pagesize).ToList();
             foreach (var post in записи)
@@ -106,7 +107,11 @@ namespace Vkontakte.Controllers
             {
                 Запись = запись,
                 Блог = запись.Блог,
-                Коментарии = _context.Коментарий.Include(t => t.Пользователь).Where(t => t.ID_Записи == запись.ID_Записи).ToList(),
+                Коментарии = _context.Коментарий
+                .Include(t => t.Пользователь)
+                .Where(t => t.ID_Записи == запись.ID_Записи)
+                .OrderByDescending(t=>t.Дата_коментария)
+                .ToList(),
                 Дествия = _context.Дествие.Include(t => t.Пользователь).Where(t => t.ID_Записи == запись.ID_Записи).ToList(),
                 Данные = data
             };
@@ -137,13 +142,6 @@ namespace Vkontakte.Controllers
                         Дата_действия = DateTime.Now,
                         Код = 1
                     };
-                    Дествие просмотр = new Дествие
-                    {
-                        ID_Записи = Guid.Parse(id),
-                        ID_Пользователя = user.ID,
-                        Дата_действия = DateTime.Now,
-                        Код = 2
-                    };
                     _context.Add(дествие);
                 }
                 _context.SaveChanges();
@@ -151,6 +149,26 @@ namespace Vkontakte.Controllers
             }
             
             return Content(action + ";" + count.ToString());
+        }
+        public IActionResult ViewAdd(string id) 
+        {
+            Guid user_id = Guid.Parse(HttpContext.User.Identity.Name);
+            Guid post_id = Guid.Parse(id);
+            Дествие просмотр = _context.Дествие.Where(t => t.ID_Пользователя == user_id && t.ID_Записи == post_id).ToList().FirstOrDefault(t => t.Код == 2);
+            int count = -1;
+            if (просмотр == null) 
+            {
+                var id_user_param = new Microsoft.Data.SqlClient.SqlParameter("@id_user", user_id);
+                var id_post_param = new Microsoft.Data.SqlClient.SqlParameter("@id_post", post_id);
+                _context.Database.ExecuteSqlRaw("AddView @id_user, @id_post", new Microsoft.Data.SqlClient.SqlParameter[] { id_user_param, id_post_param });
+                _context.SaveChanges();
+                    
+            }
+            count = _context.Дествие.Where(t => t.ID_Записи == post_id && t.Код == 2).ToList().Count();
+            return Json(new
+            {
+                count = count
+            });
         }
         public IActionResult Privacy()
         {
